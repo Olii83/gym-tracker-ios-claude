@@ -1,0 +1,50 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#dc2626" stroke="#b91c1c" stroke-width="8"/>
+  
+  <!-- Dumbbell Design -->
+  <!-- Left Weight -->
+  <rect x="50" y="200" width="80" height="112" rx="12" fill="#ffffff"/>
+  <rect x="60" y="210" width="60" height="92" rx="8" fill="#e5e7eb"/>
+  
+  <!-- Left Connector -->
+  <rect x="130" y="230" width="40" height="52" rx="4" fill="#374151"/>
+  
+  <!-- Center Bar -->
+  <rect x="170" y="240" width="172" height="32" rx="16" fill="#374151"/>
+  <rect x="175" y="245" width="162" height="22" rx="11" fill="#4b5563"/>
+  
+  <!-- Grip Lines -->
+  <line x1="200" y1="245" x2="200" y2="267" stroke="#6b7280" stroke-width="2"/>
+  <line x1="220" y1="245" x2="220" y2="267" stroke="#6b7280" stroke-width="2"/>
+  <line x1="240" y1="245" x2="240" y2="267" stroke="#6b7280" stroke-width="2"/>
+  <line x1="260" y1="245" x2="260" y2="267" stroke="#6b7280" stroke-width="2"/>
+  <line x1="280" y1="245" x2="280" y2="267" stroke="#6b7280" stroke-width="2"/>
+  <line x1="300" y1="245" x2="300" y2="267" stroke="#6b7280" stroke-width="2"/>
+  <line x1="320" y1="245" x2="320" y2="267" stroke="#6b7280" stroke-width="2"/>
+  
+  <!-- Right Connector -->
+  <rect x="342" y="230" width="40" height="52" rx="4" fill="#374151"/>
+  
+  <!-- Right Weight -->
+  <rect x="382" y="200" width="80" height="112" rx="12" fill="#ffffff"/>
+  <rect x="392" y="210" width="60" height="92" rx="8" fill="#e5e7eb"/>
+  
+  <!-- Weight Plates Detail -->
+  <!-- Left weight plates -->
+  <rect x="65" y="220" width="50" height="8" rx="4" fill="#d1d5db"/>
+  <rect x="65" y="235" width="50" height="8" rx="4" fill="#d1d5db"/>
+  <rect x="65" y="250" width="50" height="8" rx="4" fill="#d1d5db"/>
+  <rect x="65" y="265" width="50" height="8" rx="4" fill="#d1d5db"/>
+  <rect x="65" y="280" width="50" height="8" rx="4" fill="#d1d5db"/>
+  
+  <!-- Right weight plates -->
+  <rect x="397" y="220" width="50" height="8" rx="4" fill="#d1d5db"/>
+  <rect x="397" y="235" width="50" height="8" rx="4" fill="#d1d5db"/>
+  <rect x="397" y="250" width="50" height="8" rx="4" fill="#d1d5db"/>
+  <rect x="397" y="265" width="50" height="8" rx="4" fill="#d1d5db"/>
+  <rect x="397" y="280" width="50" height="8" rx="4" fill="#d1d5db"/>
+  
+  <!-- Subtle shadow effects -->
+  <ellipse cx="256" cy="350" rx="200" ry="20" fill="#000000" opacity="0.1"/>
+</svg>

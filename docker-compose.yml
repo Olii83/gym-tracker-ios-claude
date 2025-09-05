@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  gym-tracker:
+    build: .
+    container_name: gym-tracker-pwa
+    restart: unless-stopped
+    ports:
+      - "3000:80"  # Ändere den Port falls nötig
+    networks:
+      - gym-tracker-net
+    environment:
+      - TZ=Europe/Berlin
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gym-tracker.rule=Host(`gym.deindomain.de`)"
+      - "traefik.http.routers.gym-tracker.tls=true"
+      - "traefik.http.routers.gym-tracker.tls.certresolver=letsencrypt"
+
+networks:
+  gym-tracker-net:
+    driver: bridge

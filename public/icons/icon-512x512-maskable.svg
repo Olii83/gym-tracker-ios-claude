@@ -1,0 +1,58 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .bg { fill: #dc2626; }
+      .safe-zone { fill: none; stroke: #dc2626; stroke-width: 2; stroke-dasharray: 5,5; opacity: 0.3; }
+      .dumbbell { fill: #ffffff; }
+      .handle { fill: #4b5563; }
+      .detail { fill: #e5e7eb; }
+      .grip { stroke: #6b7280; stroke-width: 3; }
+    </style>
+  </defs>
+  
+  <!-- Full bleed background for maskable -->
+  <rect width="512" height="512" class="bg"/>
+  
+  <!-- Safe zone indicator (will be invisible in final icon) -->
+  <circle cx="256" cy="256" r="180" class="safe-zone"/>
+  
+  <!-- Dumbbell (scaled down to fit in safe zone) -->
+  <!-- Left Weight -->
+  <rect x="90" y="200" width="80" height="112" rx="16" class="dumbbell"/>
+  <rect x="100" y="210" width="60" height="92" rx="12" class="detail"/>
+  
+  <!-- Left Connector -->
+  <rect x="170" y="230" width="40" height="52" rx="6" class="handle"/>
+  
+  <!-- Center Bar -->
+  <rect x="210" y="240" width="92" height="32" rx="16" class="handle"/>
+  
+  <!-- Grip Lines -->
+  <line x1="225" y1="245" x2="225" y2="267" class="grip"/>
+  <line x1="240" y1="245" x2="240" y2="267" class="grip"/>
+  <line x1="255" y1="245" x2="255" y2="267" class="grip"/>
+  <line x1="270" y1="245" x2="270" y2="267" class="grip"/>
+  <line x1="285" y1="245" x2="285" y2="267" class="grip"/>
+  
+  <!-- Right Connector -->
+  <rect x="302" y="230" width="40" height="52" rx="6" class="handle"/>
+  
+  <!-- Right Weight -->
+  <rect x="342" y="200" width="80" height="112" rx="16" class="dumbbell"/>
+  <rect x="352" y="210" width="60" height="92" rx="12" class="detail"/>
+  
+  <!-- Weight Detail Lines -->
+  <g class="grip">
+    <line x1="105" y1="220" x2="145" y2="220"/>
+    <line x1="105" y1="240" x2="145" y2="240"/>
+    <line x1="105" y1="260" x2="145" y2="260"/>
+    <line x1="105" y1="280" x2="145" y2="280"/>
+    <line x1="105" y1="290" x2="145" y2="290"/>
+    
+    <line x1="367" y1="220" x2="407" y2="220"/>
+    <line x1="367" y1="240" x2="407" y2="240"/>
+    <line x1="367" y1="260" x2="407" y2="260"/>
+    <line x1="367" y1="280" x2="407" y2="280"/>
+    <line x1="367" y1="290" x2="407" y2="290"/>
+  </g>
+</svg>
