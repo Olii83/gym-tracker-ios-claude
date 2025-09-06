@@ -1,18 +1,20 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
+import { useAccentColor } from '../hooks/useAccentColor';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AddTrainingExerciseForm from '../components/AddTrainingExerciseForm';
 import PlannedSetForm from '../components/PlannedSetForm';
 import type { TrainingExercise, TrainingPlannedSet } from '../interfaces';
-import { PlusCircle, Edit, Trash2, GripVertical } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 
 const TrainingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const { trainings, trainingExercises, exercises, trainingPlannedSets, deleteTrainingExercise, deleteTrainingPlannedSet, addTrainingExercise, updateTrainingExercise } = useData();
+  const { text } = useAccentColor();
   const navigate = useNavigate();
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false);
   const [isPlannedSetModalOpen, setIsPlannedSetModalOpen] = useState(false);
@@ -20,6 +22,7 @@ const TrainingDetail = () => {
   const [selectedPlannedSet, setSelectedPlannedSet] = useState<TrainingPlannedSet | null>(null);
   const [plannedSetNumber, setPlannedSetNumber] = useState(0);
   const [localExerciseOrder, setLocalExerciseOrder] = useState<any[]>([]);
+  const [expandedExercises, setExpandedExercises] = useState<Set<number>>(new Set());
 
   const training = trainings.find(t => t.id === parseInt(id || ''));
 
@@ -143,6 +146,16 @@ const TrainingDetail = () => {
     navigate('/'); // Navigate back to the Trainings overview
   };
 
+  const toggleExerciseExpansion = (exerciseId: number) => {
+    const newExpanded = new Set(expandedExercises);
+    if (newExpanded.has(exerciseId)) {
+      newExpanded.delete(exerciseId);
+    } else {
+      newExpanded.add(exerciseId);
+    }
+    setExpandedExercises(newExpanded);
+  };
+
   const handleDragEnd = async (result: DropResult) => {
     if (!result.destination) return;
 
@@ -211,38 +224,53 @@ const TrainingDetail = () => {
                           className={`bg-gray-100 dark:bg-gray-900 rounded-lg p-4 space-y-3 ${snapshot.isDragging ? 'shadow-lg rotate-1' : ''}`}
                         >
                           <div className="flex justify-between items-center">
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-3 flex-1">
                               <div {...provided.dragHandleProps} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-grab active:cursor-grabbing">
                                 <GripVertical size={20} />
                               </div>
-                              <h2 className="font-bold text-lg text-red-500">{te.exercise_name}</h2>
+                              <button 
+                                onClick={() => toggleExerciseExpansion(te.id)}
+                                className="flex items-center space-x-2 flex-1 text-left hover:bg-gray-200 dark:hover:bg-gray-800 rounded p-1 -m-1 transition-colors"
+                              >
+                                {expandedExercises.has(te.id) ? (
+                                  <ChevronDown size={20} className="text-gray-500 dark:text-gray-400" />
+                                ) : (
+                                  <ChevronRight size={20} className="text-gray-500 dark:text-gray-400" />
+                                )}
+                                <h2 className={`font-bold text-lg ${text}`}>{te.exercise_name}</h2>
+                                <span className="text-gray-600 dark:text-gray-400 text-sm ml-auto">
+                                  {te.planned_sets} Sätze
+                                </span>
+                              </button>
                             </div>
-                            <div className="flex space-x-2">
+                            <div className="flex space-x-2 ml-2">
                               <button onClick={() => handleDeleteTrainingExercise(te.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
                             </div>
                           </div>
                           
-                          <p className="text-gray-600 dark:text-gray-400">Geplante Sätze: {te.planned_sets}</p>
-
-                          <div className="space-y-1">
-                            {te.plannedSets.map((ps: TrainingPlannedSet) => (
-                              <div key={ps.id} className="flex justify-between items-center text-white py-1">
-                                <span className="text-gray-900 dark:text-white">Set {ps.set_number}: {ps.planned_reps || '?'} reps x {ps.planned_weight || '?'} {ps.planned_unit || 'kg'}</span>
-                                <div className="flex space-x-2">
-                                  <button onClick={() => handleEditPlannedSet(te, ps)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Edit size={18} /></button>
-                                  <button onClick={() => handleDeletePlannedSet(ps.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
-                                </div>
+                          {expandedExercises.has(te.id) && (
+                            <>
+                              <div className="space-y-1">
+                                {te.plannedSets.map((ps: TrainingPlannedSet) => (
+                                  <div key={ps.id} className="flex justify-between items-center text-white py-1">
+                                    <span className="text-gray-900 dark:text-white">Set {ps.set_number}: {ps.planned_reps || '?'} reps x {ps.planned_weight || '?'} {ps.planned_unit || 'kg'}</span>
+                                    <div className="flex space-x-2">
+                                      <button onClick={() => handleEditPlannedSet(te, ps)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Edit size={18} /></button>
+                                      <button onClick={() => handleDeletePlannedSet(ps.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+                                    </div>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
-                          </div>
 
-                          {te.plannedSets.length < te.planned_sets && (
-                            <Button onClick={() => handleAddPlannedSet(te)} variant="secondary" className="w-full mt-3">
-                              <div className="flex items-center justify-center space-x-2">
-                                <PlusCircle size={18} />
-                                <span>Satz {te.plannedSets.length + 1} hinzufügen</span>
-                              </div>
-                            </Button>
+                              {te.plannedSets.length < te.planned_sets && (
+                                <Button onClick={() => handleAddPlannedSet(te)} variant="secondary" className="w-full mt-3">
+                                  <div className="flex items-center justify-center space-x-2">
+                                    <PlusCircle size={18} />
+                                    <span>Satz {te.plannedSets.length + 1} hinzufügen</span>
+                                  </div>
+                                </Button>
+                              )}
+                            </>
                           )}
                         </div>
                       )}
@@ -265,7 +293,7 @@ const TrainingDetail = () => {
       </Modal>
 
       {selectedTrainingExercise && (
-        <Modal isOpen={isPlannedSetModalOpen} onClose={() => setIsPlannedSetModalOpen(false)} title={selectedPlannedSet ? 'Edit Planned Set' : `Add Planned Set ${plannedSetNumber}`}>
+        <Modal isOpen={isPlannedSetModalOpen} onClose={() => setIsPlannedSetModalOpen(false)} title={selectedPlannedSet ? 'Geplanten Satz bearbeiten' : `Geplanten Satz ${plannedSetNumber} hinzufügen`}>
           <PlannedSetForm 
             trainingExerciseId={selectedTrainingExercise.id} 
             setNumber={plannedSetNumber}
