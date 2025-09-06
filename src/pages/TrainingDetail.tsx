@@ -21,24 +21,24 @@ const TrainingDetail = () => {
   const training = trainings.find(t => t.id === parseInt(id || ''));
 
   if (!training) {
-    return <div className="p-4 text-white">Training not found.</div>;
+    return <div className="p-4 text-white">Training nicht gefunden.</div>;
   }
 
   const exercisesInTraining = trainingExercises.filter(te => te.training_id === training.id)
     .map(te => ({
       ...te,
-      exercise_name: exercises.find(ex => ex.id === te.exercise_id)?.name || 'Unknown Exercise',
+      exercise_name: exercises.find(ex => ex.id === te.exercise_id)?.name || 'Unbekannte Übung',
       plannedSets: trainingPlannedSets.filter(tps => tps.training_exercise_id === te.id).sort((a, b) => a.set_number - b.set_number),
     })).sort((a, b) => a.order - b.order);
 
   const handleDeleteTrainingExercise = async (trainingExerciseId: number) => {
-    if (window.confirm('Are you sure you want to remove this exercise from the training?')) {
+    if (window.confirm('Bist du sicher, dass du diese Übung aus dem Training entfernen möchtest?')) {
       await deleteTrainingExercise(trainingExerciseId);
     }
   };
 
   const handleDeletePlannedSet = async (plannedSetId: number) => {
-    if (window.confirm('Are you sure you want to delete this planned set?')) {
+    if (window.confirm('Bist du sicher, dass du diesen geplanten Satz löschen möchtest?')) {
       await deleteTrainingPlannedSet(plannedSetId);
     }
   };
@@ -88,7 +88,7 @@ const TrainingDetail = () => {
                 </div>
               </div>
               
-              <p className="text-gray-400">Planned Sets: {te.planned_sets}</p>
+              <p className="text-gray-400">Geplante Sätze: {te.planned_sets}</p>
 
               <div className="space-y-1">
                 {te.plannedSets.map(ps => (
