@@ -32,7 +32,7 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedExerciseId) {
-      alert('Please select an exercise.');
+      alert('Bitte wähle eine Übung aus.');
       return;
     }
 
@@ -69,7 +69,7 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="exercise" className="block text-sm font-medium text-gray-300 mb-1">Exercise</label>
+        <label htmlFor="exercise" className="block text-sm font-medium text-gray-300 mb-1">Übung</label>
         <select
           id="exercise"
           className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -83,13 +83,13 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
       </div>
 
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold text-white">Planned Sets</h3>
+        <h3 className="text-lg font-semibold text-white">Geplante Sätze</h3>
         {plannedSets.map((set, index) => (
           <div key={index} className="bg-gray-800 p-3 rounded-lg flex items-center space-x-2">
             <span className="text-gray-300 font-medium">Set {set.set_number}</span>
             <input
               type="number"
-              placeholder="Reps"
+              placeholder="Wdh."
               className="w-1/4 bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
               value={set.planned_reps || ''}
               onChange={(e) => handleSetChange(index, 'planned_reps', parseInt(e.target.value) || null)}
@@ -97,7 +97,7 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
             <input
               type="number"
               step="0.25"
-              placeholder="Weight"
+              placeholder="Gewicht"
               className="w-1/4 bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
               value={set.planned_weight || ''}
               onChange={(e) => handleSetChange(index, 'planned_weight', parseFloat(e.target.value) || null)}
@@ -120,14 +120,14 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
         <Button type="button" onClick={handleAddSet} variant="secondary" className="w-full mt-3">
           <div className="flex items-center justify-center space-x-2">
             <PlusCircle size={18} />
-            <span>Add Set</span>
+            <span>Satz hinzufügen</span>
           </div>
         </Button>
       </div>
 
       <div className="pt-2">
         <Button type="submit" disabled={loading}>
-          {loading ? 'Adding...' : 'Add Exercise to Training'}
+          {loading ? 'Wird hinzugefügt...' : 'Übung zu Training hinzufügen'}
         </Button>
       </div>
     </form>

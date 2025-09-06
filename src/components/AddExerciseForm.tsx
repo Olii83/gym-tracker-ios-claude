@@ -17,7 +17,7 @@ const AddExerciseForm = ({ onClose }: AddExerciseFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      alert('Please enter an exercise name.');
+      alert('Bitte gib einen Übungsnamen ein.');
       return;
     }
     setLoading(true);
@@ -33,7 +33,7 @@ const AddExerciseForm = ({ onClose }: AddExerciseFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">Exercise Name</label>
+        <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">Übungsname</label>
         <input
           id="name"
           className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -43,7 +43,7 @@ const AddExerciseForm = ({ onClose }: AddExerciseFormProps) => {
         />
       </div>
       <div>
-        <label htmlFor="muscleGroup" className="block text-sm font-medium text-gray-300 mb-1">Muscle Group</label>
+        <label htmlFor="muscleGroup" className="block text-sm font-medium text-gray-300 mb-1">Muskelgruppe</label>
         <select
           id="muscleGroup"
           className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -57,7 +57,7 @@ const AddExerciseForm = ({ onClose }: AddExerciseFormProps) => {
       </div>
       <div className="pt-2">
         <Button type="submit" disabled={loading}>
-          {loading ? 'Adding...' : 'Add Exercise'}
+          {loading ? 'Wird hinzugefügt...' : 'Übung hinzufügen'}
         </Button>
       </div>
     </form>

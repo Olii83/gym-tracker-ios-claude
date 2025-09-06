@@ -18,7 +18,7 @@ const EditLogForm = ({ onClose, log }: EditLogFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedExercise || !reps || !weight) {
-      alert('Please fill out all fields.');
+      alert('Bitte fülle alle Felder aus.');
       return;
     }
     setLoading(true);
@@ -39,7 +39,7 @@ const EditLogForm = ({ onClose, log }: EditLogFormProps) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="exercise" className="block text-sm font-medium text-gray-300 mb-1">Exercise</label>
+        <label htmlFor="exercise" className="block text-sm font-medium text-gray-300 mb-1">Übung</label>
         <select
           id="exercise"
           className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -53,7 +53,7 @@ const EditLogForm = ({ onClose, log }: EditLogFormProps) => {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="reps" className="block text-sm font-medium text-gray-300 mb-1">Reps</label>
+          <label htmlFor="reps" className="block text-sm font-medium text-gray-300 mb-1">Wiederholungen</label>
           <input
             id="reps"
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -64,7 +64,7 @@ const EditLogForm = ({ onClose, log }: EditLogFormProps) => {
           />
         </div>
         <div>
-          <label htmlFor="weight" className="block text-sm font-medium text-gray-300 mb-1">Weight (kg)</label>
+          <label htmlFor="weight" className="block text-sm font-medium text-gray-300 mb-1">Gewicht (kg)</label>
           <input
             id="weight"
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -78,7 +78,7 @@ const EditLogForm = ({ onClose, log }: EditLogFormProps) => {
       </div>
       <div className="pt-2">
         <Button type="submit" disabled={loading}>
-          {loading ? 'Updating...' : 'Update Log'}
+          {loading ? 'Wird aktualisiert...' : 'Log aktualisieren'}
         </Button>
       </div>
     </form>

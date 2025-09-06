@@ -34,7 +34,7 @@ const Statistiken = () => {
     labels: selectedExerciseLogs.map(log => new Date(log.created_at).toLocaleDateString()),
     datasets: [
       {
-        label: 'Weight (kg)',
+        label: 'Gewicht (kg)',
         data: selectedExerciseLogs.map(log => log.weight),
         fill: false,
         borderColor: 'rgb(239, 68, 68)',
@@ -51,7 +51,7 @@ const Statistiken = () => {
       },
       title: {
         display: true,
-        text: `Progress for ${exercises.find(e => e.id === parseInt(selectedExerciseId))?.name || ''}`,
+        text: `Fortschritt für ${exercises.find(e => e.id === parseInt(selectedExerciseId))?.name || ''}`,
         color: '#fff',
       },
     },
@@ -76,7 +76,7 @@ const Statistiken = () => {
         value={selectedExerciseId}
         onChange={(e) => setSelectedExerciseId(e.target.value)}
       >
-        <option value="">Select an exercise</option>
+        <option value="">Übung auswählen</option>
         {exercises.map(ex => (
           <option key={ex.id} value={ex.id}>{ex.name}</option>
         ))}
@@ -88,7 +88,7 @@ const Statistiken = () => {
         </div>
       ) : (
         <div className="text-center py-20 px-4 bg-gray-900 rounded-lg">
-          <p className="text-gray-400">Select an exercise to see your progress.</p>
+          <p className="text-gray-400">Wähle eine Übung aus, um deinen Fortschritt zu sehen.</p>
         </div>
       )}
     </div>
