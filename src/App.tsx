@@ -11,6 +11,7 @@ import Einstellungen from './pages/Einstellungen';
 import Auth from './pages/Auth';
 import TrainingDetail from './pages/TrainingDetail';
 import TrackingPage from './pages/TrackingPage';
+import PWAUpdatePrompt from './components/PWAUpdatePrompt';
 
 function App() {
   const { session } = useAuth();
@@ -37,6 +38,7 @@ function App() {
             </Routes>
           </DataProvider>
         )}
+        <PWAUpdatePrompt />
       </BrowserRouter>
     </ThemeProvider>
   );
