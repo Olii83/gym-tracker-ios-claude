@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useData } from '../contexts/DataContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useAccentColor } from '../hooks/useAccentColor';
 import { ScrollText, Calendar, Clock, Dumbbell, Trash2 } from 'lucide-react';
 import type { WorkoutLog } from '../interfaces';
 
 const Logs = () => {
   const { logs, exercises, deleteLog } = useData();
-  const { getAccentClasses } = useTheme();
+  const { text, primary, hover } = useAccentColor();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'week' | 'month'>('all');
   const [deleteMode, setDeleteMode] = useState(false);
   const [selectedLogs, setSelectedLogs] = useState<Set<number>>(new Set());
@@ -132,14 +132,14 @@ const Logs = () => {
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <ScrollText className="text-red-500" size={28} />
+          <ScrollText className={text} size={28} />
           <h1 className="text-2xl font-bold text-white">Training Logs</h1>
         </div>
         <div className="flex items-center space-x-2">
           {!deleteMode ? (
             <button
               onClick={() => setDeleteMode(true)}
-              className="flex items-center space-x-1 px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-lg transition-colors"
+              className={`flex items-center space-x-1 px-3 py-2 ${primary} ${hover} text-white text-sm rounded-lg transition-colors`}
             >
               <Trash2 size={16} />
               <span>Löschen</span>
@@ -158,7 +158,7 @@ const Logs = () => {
               <button
                 onClick={handleDeleteSelectedLogs}
                 disabled={selectedLogs.size === 0}
-                className="flex items-center space-x-1 px-3 py-2 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors"
+                className={`flex items-center space-x-1 px-3 py-2 ${primary} ${hover} disabled:bg-gray-600 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors`}
               >
                 <Trash2 size={16} />
                 <span>Löschen ({selectedLogs.size})</span>
@@ -174,7 +174,7 @@ const Logs = () => {
           onClick={() => setSelectedFilter('all')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             selectedFilter === 'all'
-              ? 'bg-red-600 text-white'
+              ? `${primary} text-white`
               : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
           }`}
         >
@@ -184,7 +184,7 @@ const Logs = () => {
           onClick={() => setSelectedFilter('week')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             selectedFilter === 'week'
-              ? 'bg-red-600 text-white'
+              ? `${primary} text-white`
               : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
           }`}
         >
@@ -194,7 +194,7 @@ const Logs = () => {
           onClick={() => setSelectedFilter('month')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             selectedFilter === 'month'
-              ? 'bg-red-600 text-white'
+              ? `${primary} text-white`
               : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
           }`}
         >
@@ -223,7 +223,7 @@ const Logs = () => {
               <div key={date} className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4">
                 {/* Date Header */}
                 <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-gray-800">
-                  <Calendar size={20} className="text-red-500" />
+                  <Calendar size={20} className={text} />
                   <h2 className="text-lg font-semibold text-white">
                     {formatDate(date)}
                   </h2>
@@ -238,7 +238,7 @@ const Logs = () => {
                         </button>
                         <button
                           onClick={() => handleDeleteWorkoutSession(date)}
-                          className="flex items-center space-x-1 px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded transition-colors"
+                          className={`flex items-center space-x-1 px-2 py-1 ${primary} ${hover} text-white text-xs rounded transition-colors`}
                         >
                           <Trash2 size={12} />
                           <span>Training löschen</span>
@@ -264,7 +264,7 @@ const Logs = () => {
                       <div key={exerciseId} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2">
-                            <Dumbbell size={16} className="text-red-500" />
+                            <Dumbbell size={16} className={text} />
                             <h3 className="font-medium text-white">
                               {getExerciseName(exerciseId)}
                             </h3>
@@ -288,14 +288,14 @@ const Logs = () => {
                                 deleteMode 
                                   ? 'cursor-pointer border-2 transition-all ' + 
                                     (selectedLogs.has(log.id) 
-                                      ? 'bg-red-600 border-red-400 text-white' 
+                                      ? `${primary} border-red-400 text-white` 
                                       : 'bg-gray-700 border-gray-600 hover:border-gray-500')
                                   : 'bg-gray-700'
                               }`}
                               onClick={deleteMode ? () => toggleLogSelection(log.id) : undefined}
                             >
                               {deleteMode && selectedLogs.has(log.id) && (
-                                <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                <div className={`absolute -top-1 -right-1 w-4 h-4 ${primary} rounded-full flex items-center justify-center`}>
                                   <span className="text-white text-xs">✓</span>
                                 </div>
                               )}
