@@ -360,11 +360,13 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateTrainingExercise = async (trainingExercise: TrainingExercise) => {
-    const { data, error } = await supabase.from('training_exercises').update(trainingExercise).eq('id', trainingExercise.id).select();
+    // Remove id from update data to avoid "GENERATED ALWAYS" error
+    const { id, ...updateData } = trainingExercise;
+    const { data, error } = await supabase.from('training_exercises').update(updateData).eq('id', id).select();
     if (error) {
       console.error('Error updating training exercise:', error);
     } else if (data) {
-      setTrainingExercises(prev => prev.map(te => (te.id === trainingExercise.id ? data[0] : te)));
+      setTrainingExercises(prev => prev.map(te => (te.id === id ? data[0] : te)));
     }
     return { data, error };
   };

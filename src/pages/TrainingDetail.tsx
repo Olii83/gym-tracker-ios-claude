@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import Button from '../components/Button';
@@ -6,20 +6,52 @@ import Modal from '../components/Modal';
 import AddTrainingExerciseForm from '../components/AddTrainingExerciseForm';
 import PlannedSetForm from '../components/PlannedSetForm';
 import type { TrainingExercise, TrainingPlannedSet } from '../interfaces';
-import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, GripVertical } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 
 const TrainingDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { trainings, trainingExercises, exercises, trainingPlannedSets, deleteTrainingExercise, deleteTrainingPlannedSet, addTrainingExercise } = useData();
+  const { trainings, trainingExercises, exercises, trainingPlannedSets, deleteTrainingExercise, deleteTrainingPlannedSet, addTrainingExercise, updateTrainingExercise } = useData();
   const navigate = useNavigate();
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false);
   const [isPlannedSetModalOpen, setIsPlannedSetModalOpen] = useState(false);
   const [selectedTrainingExercise, setSelectedTrainingExercise] = useState<TrainingExercise | null>(null);
   const [selectedPlannedSet, setSelectedPlannedSet] = useState<TrainingPlannedSet | null>(null);
   const [plannedSetNumber, setPlannedSetNumber] = useState(0);
+  const [localExerciseOrder, setLocalExerciseOrder] = useState<any[]>([]);
 
   const training = trainings.find(t => t.id === parseInt(id || ''));
+
+  // Initialize exercisesInTraining with proper ordering
+  const exercisesInTraining = useMemo(() => {
+    const baseExercises = trainingExercises.filter(te => te.training_id === training?.id)
+      .map(te => ({
+        ...te,
+        exercise_name: exercises.find(ex => ex.id === te.exercise_id)?.name || 'Unbekannte Übung',
+        plannedSets: trainingPlannedSets.filter(tps => tps.training_exercise_id === te.id).sort((a, b) => a.set_number - b.set_number),
+      })).sort((a, b) => a.order - b.order);
+
+    // Use local order if available, otherwise use base exercises
+    if (localExerciseOrder.length > 0 && localExerciseOrder.length === baseExercises.length) {
+      return localExerciseOrder;
+    }
+    return baseExercises;
+  }, [trainingExercises, training?.id, exercises, trainingPlannedSets, localExerciseOrder]);
+
+  // Update local order when data changes
+  useEffect(() => {
+    if (training?.id) {
+      const baseExercises = trainingExercises.filter(te => te.training_id === training.id)
+        .map(te => ({
+          ...te,
+          exercise_name: exercises.find(ex => ex.id === te.exercise_id)?.name || 'Unbekannte Übung',
+          plannedSets: trainingPlannedSets.filter(tps => tps.training_exercise_id === te.id).sort((a, b) => a.set_number - b.set_number),
+        })).sort((a, b) => a.order - b.order);
+      
+      setLocalExerciseOrder(baseExercises);
+    }
+  }, [trainingExercises, training?.id, exercises, trainingPlannedSets]);
 
   const handleAddExerciseFromUrl = async (exerciseId: number) => {
     if (!training) return;
@@ -80,12 +112,6 @@ const TrainingDetail = () => {
     return <div className="p-4 text-gray-900 dark:text-white">Training nicht gefunden.</div>;
   }
 
-  const exercisesInTraining = trainingExercises.filter(te => te.training_id === training.id)
-    .map(te => ({
-      ...te,
-      exercise_name: exercises.find(ex => ex.id === te.exercise_id)?.name || 'Unbekannte Übung',
-      plannedSets: trainingPlannedSets.filter(tps => tps.training_exercise_id === te.id).sort((a, b) => a.set_number - b.set_number),
-    })).sort((a, b) => a.order - b.order);
 
   const handleDeleteTrainingExercise = async (trainingExerciseId: number) => {
     if (window.confirm('Bist du sicher, dass du diese Übung aus dem Training entfernen möchtest?')) {
@@ -117,6 +143,43 @@ const TrainingDetail = () => {
     navigate('/'); // Navigate back to the Trainings overview
   };
 
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+
+    const items = Array.from(exercisesInTraining);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    // Update local state immediately for UI responsiveness
+    setLocalExerciseOrder(items);
+
+    // Update each training exercise with new order via DataContext
+    try {
+      for (let index = 0; index < items.length; index++) {
+        const item = items[index];
+        const originalFromContext = trainingExercises.find(te => te.id === item.id);
+        if (originalFromContext) {
+          const updatedItem = {
+            ...originalFromContext,
+            order: index
+          };
+          await updateTrainingExercise(updatedItem);
+        }
+      }
+    } catch (error) {
+      console.error('Fehler beim Neuordnen der Übungen:', error);
+      alert('Fehler beim Neuordnen der Übungen.');
+      // Reset to original order on error
+      const originalOrder = trainingExercises.filter(te => te.training_id === training?.id)
+        .map(te => ({
+          ...te,
+          exercise_name: exercises.find(ex => ex.id === te.exercise_id)?.name || 'Unbekannte Übung',
+          plannedSets: trainingPlannedSets.filter(tps => tps.training_exercise_id === te.id).sort((a, b) => a.set_number - b.set_number),
+        })).sort((a, b) => a.order - b.order);
+      setLocalExerciseOrder(originalOrder);
+    }
+  };
+
   return (
     <div className="p-4 space-y-6">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{training.name}</h1>
@@ -129,45 +192,67 @@ const TrainingDetail = () => {
       </Button>
 
       <div className="space-y-4">
-        {exercisesInTraining.length === 0 ? (
+{exercisesInTraining.length === 0 ? (
           <div className="text-center py-10 px-4 bg-gray-100 dark:bg-gray-900 rounded-lg">
             <p className="text-gray-600 dark:text-gray-400">Noch keine Übungen in diesem Training.</p>
             <p className="text-gray-500 dark:text-gray-500 text-sm">Füge Übungen hinzu, um dein Training zu planen.</p>
           </div>
         ) : (
-          exercisesInTraining.map((te) => (
-            <div key={te.id} className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 space-y-3">
-              <div className="flex justify-between items-center">
-                <h2 className="font-bold text-lg text-red-500">{te.exercise_name}</h2>
-                <div className="flex space-x-2">
-                  <button onClick={() => handleDeleteTrainingExercise(te.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="exercises">
+              {(provided) => (
+                <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                  {exercisesInTraining.map((te, index) => (
+                    <Draggable key={te.id} draggableId={te.id.toString()} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          className={`bg-gray-100 dark:bg-gray-900 rounded-lg p-4 space-y-3 ${snapshot.isDragging ? 'shadow-lg rotate-1' : ''}`}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center space-x-3">
+                              <div {...provided.dragHandleProps} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-grab active:cursor-grabbing">
+                                <GripVertical size={20} />
+                              </div>
+                              <h2 className="font-bold text-lg text-red-500">{te.exercise_name}</h2>
+                            </div>
+                            <div className="flex space-x-2">
+                              <button onClick={() => handleDeleteTrainingExercise(te.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+                            </div>
+                          </div>
+                          
+                          <p className="text-gray-600 dark:text-gray-400">Geplante Sätze: {te.planned_sets}</p>
+
+                          <div className="space-y-1">
+                            {te.plannedSets.map(ps => (
+                              <div key={ps.id} className="flex justify-between items-center text-white py-1">
+                                <span className="text-gray-900 dark:text-white">Set {ps.set_number}: {ps.planned_reps || '?'} reps x {ps.planned_weight || '?'} {ps.planned_unit || 'kg'}</span>
+                                <div className="flex space-x-2">
+                                  <button onClick={() => handleEditPlannedSet(te, ps)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Edit size={18} /></button>
+                                  <button onClick={() => handleDeletePlannedSet(ps.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {te.plannedSets.length < te.planned_sets && (
+                            <Button onClick={() => handleAddPlannedSet(te)} variant="secondary" className="w-full mt-3">
+                              <div className="flex items-center justify-center space-x-2">
+                                <PlusCircle size={18} />
+                                <span>Satz {te.plannedSets.length + 1} hinzufügen</span>
+                              </div>
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
                 </div>
-              </div>
-              
-              <p className="text-gray-600 dark:text-gray-400">Geplante Sätze: {te.planned_sets}</p>
-
-              <div className="space-y-1">
-                {te.plannedSets.map(ps => (
-                  <div key={ps.id} className="flex justify-between items-center text-white py-1">
-                    <span className="text-gray-900 dark:text-white">Set {ps.set_number}: {ps.planned_reps || '?'} reps x {ps.planned_weight || '?'} {ps.planned_unit || 'kg'}</span>
-                    <div className="flex space-x-2">
-                      <button onClick={() => handleEditPlannedSet(te, ps)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Edit size={18} /></button>
-                      <button onClick={() => handleDeletePlannedSet(ps.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {te.plannedSets.length < te.planned_sets && (
-                <Button onClick={() => handleAddPlannedSet(te)} variant="secondary" className="w-full mt-3">
-                  <div className="flex items-center justify-center space-x-2">
-                    <PlusCircle size={18} />
-                    <span>Add Set {te.plannedSets.length + 1}</span>
-                  </div>
-                </Button>
               )}
-            </div>
-          ))
+            </Droppable>
+          </DragDropContext>
         )}
       </div>
 

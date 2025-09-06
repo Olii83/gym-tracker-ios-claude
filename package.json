@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "@supabase/supabase-js": "^2.57.0",
+    "@types/react-beautiful-dnd": "^13.1.8",
     "chart.js": "^4.5.0",
     "lucide-react": "^0.542.0",
     "react": "^19.1.1",
