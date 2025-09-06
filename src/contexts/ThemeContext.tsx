@@ -1,8 +1,21 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
+export type AccentColor = 'red' | 'blue' | 'green' | 'purple' | 'orange';
+
+export const accentColors: Record<AccentColor, { name: string; primary: string; hover: string; ring: string }> = {
+  red: { name: 'Rot', primary: 'bg-red-600', hover: 'hover:bg-red-700', ring: 'focus:ring-red-600' },
+  blue: { name: 'Blau', primary: 'bg-blue-600', hover: 'hover:bg-blue-700', ring: 'focus:ring-blue-600' },
+  green: { name: 'Grün', primary: 'bg-green-600', hover: 'hover:bg-green-700', ring: 'focus:ring-green-600' },
+  purple: { name: 'Lila', primary: 'bg-purple-600', hover: 'hover:bg-purple-700', ring: 'focus:ring-purple-600' },
+  orange: { name: 'Orange', primary: 'bg-orange-600', hover: 'hover:bg-orange-700', ring: 'focus:ring-orange-600' },
+};
+
 interface ThemeContextType {
   isDarkMode: boolean;
+  accentColor: AccentColor;
   toggleTheme: () => void;
+  setAccentColor: (color: AccentColor) => void;
+  getAccentClasses: () => { primary: string; hover: string; ring: string };
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -22,6 +35,12 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     return saved ? saved === 'dark' : true;
   });
 
+  const [accentColor, setAccentColorState] = useState<AccentColor>(() => {
+    // Check localStorage for saved accent color, default to red
+    const saved = localStorage.getItem('accentColor') as AccentColor;
+    return saved && saved in accentColors ? saved : 'red';
+  });
+
   useEffect(() => {
     // Save theme preference to localStorage
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
@@ -34,12 +53,31 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isDarkMode]);
 
+  useEffect(() => {
+    // Save accent color preference to localStorage
+    localStorage.setItem('accentColor', accentColor);
+  }, [accentColor]);
+
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
   };
 
+  const setAccentColor = (color: AccentColor) => {
+    setAccentColorState(color);
+  };
+
+  const getAccentClasses = () => {
+    return accentColors[accentColor];
+  };
+
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
+    <ThemeContext.Provider value={{ 
+      isDarkMode, 
+      accentColor, 
+      toggleTheme, 
+      setAccentColor, 
+      getAccentClasses 
+    }}>
       {children}
     </ThemeContext.Provider>
   );
