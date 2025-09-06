@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useData } from '../contexts/DataContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { ScrollText, Calendar, Clock, Dumbbell, Trash2 } from 'lucide-react';
 import type { WorkoutLog } from '../interfaces';
 
 const Logs = () => {
   const { logs, exercises, deleteLog } = useData();
+  const { getAccentClasses } = useTheme();
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'week' | 'month'>('all');
   const [deleteMode, setDeleteMode] = useState(false);
   const [selectedLogs, setSelectedLogs] = useState<Set<number>>(new Set());

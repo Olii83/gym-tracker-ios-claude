@@ -25,7 +25,7 @@ const Einstellungen = () => {
       <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Einstellungen</h1>
 
       <div className="space-y-4">
-        <h2 className={`text-xl font-semibold mb-3 ${getAccentClasses().primary.replace('bg-', 'text-')}`}>Profil</h2>
+        <h2 className={`text-xl font-semibold mb-3 ${getAccentClasses().text}`}>Profil</h2>
         <div className="bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
           <SettingsItem
             icon={<User className="text-gray-600 dark:text-gray-400" />}
@@ -45,7 +45,7 @@ const Einstellungen = () => {
       </div>
 
       <div className="space-y-4">
-        <h2 className={`text-xl font-semibold mb-3 ${getAccentClasses().primary.replace('bg-', 'text-')}`}>Allgemein</h2>
+        <h2 className={`text-xl font-semibold mb-3 ${getAccentClasses().text}`}>Allgemein</h2>
         <div className="bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden divide-y divide-gray-200 dark:divide-gray-800">
           <SettingsItem
             icon={<Weight className="text-gray-600 dark:text-gray-400" />}
@@ -94,12 +94,12 @@ const Einstellungen = () => {
       </div>
 
       <div className="space-y-4">
-        <h2 className={`text-xl font-semibold mb-3 ${getAccentClasses().primary.replace('bg-', 'text-')}`}>Daten</h2>
+        <h2 className={`text-xl font-semibold mb-3 ${getAccentClasses().text}`}>Daten</h2>
         <div className="bg-gray-100 dark:bg-gray-900 rounded-lg overflow-hidden">
           <SettingsItem
             icon={<Download className="text-gray-600 dark:text-gray-400" />}
             label="Backup erstellen"
-            action={<button className={`font-semibold ${getAccentClasses().primary.replace('bg-', 'text-')}`}>Export</button>}
+            action={<button className={`font-semibold ${getAccentClasses().text}`}>Export</button>}
           />
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
+import { useAccentColor } from '../hooks/useAccentColor';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AddExerciseForm from '../components/AddExerciseForm';
@@ -10,6 +11,7 @@ import { Edit3, Trash2, Search, Filter } from 'lucide-react';
 
 const Uebungen = () => {
   const { exercises, deleteExercise } = useData();
+  const { heading } = useAccentColor();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -156,7 +158,7 @@ const Uebungen = () => {
             
             return (
               <div key={group}>
-                <h2 className="text-xl font-semibold text-red-500 mb-3">
+                <h2 className={`text-xl font-semibold mb-3 ${heading}`}>
                   {group} ({groupExercises.length})
                 </h2>
                 <div className="bg-gray-100 dark:bg-gray-900 rounded-lg">
