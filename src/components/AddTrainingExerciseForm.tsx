@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import Button from './Button';
 import type { TrainingPlannedSet } from '../interfaces';
@@ -11,11 +11,30 @@ interface AddTrainingExerciseFormProps {
 
 const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFormProps) => {
   const { exercises, trainingExercises, addTrainingExercise } = useData();
-  const [selectedExerciseId, setSelectedExerciseId] = useState(exercises[0]?.id.toString() || '');
+  const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('');
+  const [selectedExerciseId, setSelectedExerciseId] = useState('');
   const [plannedSets, setPlannedSets] = useState<Omit<TrainingPlannedSet, 'id' | 'created_at' | 'training_exercise_id'>[]>(
     [{ set_number: 1, planned_reps: null, planned_weight: null, planned_unit: 'kg' }]
   );
   const [loading, setLoading] = useState(false);
+
+  // Get unique muscle groups
+  const muscleGroups = useMemo(() => {
+    const groups = [...new Set(exercises.map(ex => ex.muscle_group))].sort();
+    return groups;
+  }, [exercises]);
+
+  // Filter exercises by selected muscle group
+  const filteredExercises = useMemo(() => {
+    if (!selectedMuscleGroup) return exercises;
+    return exercises.filter(ex => ex.muscle_group === selectedMuscleGroup);
+  }, [exercises, selectedMuscleGroup]);
+
+  // Reset exercise selection when muscle group changes
+  const handleMuscleGroupChange = (muscleGroup: string) => {
+    setSelectedMuscleGroup(muscleGroup);
+    setSelectedExerciseId('');
+  };
 
   const handleAddSet = () => {
     setPlannedSets(prev => [...prev, { set_number: prev.length + 1, planned_reps: null, planned_weight: null, planned_unit: 'kg' }]);
@@ -25,7 +44,7 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
     setPlannedSets(prev => prev.filter((_, i) => i !== index).map((set, i) => ({ ...set, set_number: i + 1 })));
   };
 
-  const handleSetChange = (index: number, field: keyof Omit<TrainingPlannedSet, 'id' | 'created_at' | 'training_exercise_id' | 'set_number'>, value: any) => {
+  const handleSetChange = (index: number, field: keyof Omit<TrainingPlannedSet, 'id' | 'created_at' | 'training_exercise_id' | 'set_number'>, value: number | string | null) => {
     setPlannedSets(prev => prev.map((set, i) => (i === index ? { ...set, [field]: value } : set)));
   };
 
@@ -69,14 +88,31 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="exercise" className="block text-sm font-medium text-gray-300 mb-1">Übung</label>
+        <label htmlFor="muscleGroup" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Körperpartie</label>
+        <select
+          id="muscleGroup"
+          className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+          value={selectedMuscleGroup}
+          onChange={(e) => handleMuscleGroupChange(e.target.value)}
+        >
+          <option value="">Alle Körperpartien</option>
+          {muscleGroups.map(group => (
+            <option key={group} value={group}>{group}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="exercise" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Übung</label>
         <select
           id="exercise"
           className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
           value={selectedExerciseId}
           onChange={(e) => setSelectedExerciseId(e.target.value)}
+          disabled={filteredExercises.length === 0}
         >
-          {exercises.map(ex => (
+          <option value="">Übung auswählen...</option>
+          {filteredExercises.map(ex => (
             <option key={ex.id} value={ex.id}>{ex.name}</option>
           ))}
         </select>
