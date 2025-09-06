@@ -70,11 +70,10 @@ const Einstellungen = () => {
             }
           />
           <SettingsItem
-            icon={<Palette className="text-gray-600 dark:text-gray-400" />}
+            icon={<Palette size={24} className="text-gray-600 dark:text-gray-400" />}
             label="Akzentfarbe"
-            description="Wähle deine bevorzugte Farbe für Buttons und Hervorhebungen"
             action={
-              <div className="grid grid-cols-3 gap-2 w-fit">
+              <div className="grid grid-cols-3 gap-3 w-fit">
                 {Object.entries(accentColors).map(([colorKey, colorData]) => (
                   <button
                     key={colorKey}
