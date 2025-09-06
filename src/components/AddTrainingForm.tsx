@@ -37,7 +37,7 @@ const AddTrainingForm = ({ onClose, onSuccess }: AddTrainingFormProps) => {
         <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1">Trainingsname</label>
         <input
           id="name"
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+          className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}

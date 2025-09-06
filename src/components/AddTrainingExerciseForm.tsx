@@ -72,7 +72,7 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
         <label htmlFor="exercise" className="block text-sm font-medium text-gray-300 mb-1">Übung</label>
         <select
           id="exercise"
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+          className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
           value={selectedExerciseId}
           onChange={(e) => setSelectedExerciseId(e.target.value)}
         >
@@ -85,12 +85,12 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
       <div className="space-y-3">
         <h3 className="text-lg font-semibold text-white">Geplante Sätze</h3>
         {plannedSets.map((set, index) => (
-          <div key={index} className="bg-gray-800 p-3 rounded-lg flex items-center space-x-2">
-            <span className="text-gray-300 font-medium">Set {set.set_number}</span>
+          <div key={index} className="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg flex items-center space-x-2">
+            <span className="text-gray-700 dark:text-gray-300 font-medium">Set {set.set_number}</span>
             <input
               type="number"
               placeholder="Wdh."
-              className="w-1/4 bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
+              className="w-1/4 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
               value={set.planned_reps || ''}
               onChange={(e) => handleSetChange(index, 'planned_reps', parseInt(e.target.value) || null)}
             />
@@ -98,12 +98,12 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
               type="number"
               step="0.25"
               placeholder="Gewicht"
-              className="w-1/4 bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
+              className="w-1/4 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
               value={set.planned_weight || ''}
               onChange={(e) => handleSetChange(index, 'planned_weight', parseFloat(e.target.value) || null)}
             />
             <select
-              className="w-1/6 bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
+              className="w-1/6 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-2 py-1 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600"
               value={set.planned_unit || 'kg'}
               onChange={(e) => handleSetChange(index, 'planned_unit', e.target.value as 'kg' | 'lb')}
             >
@@ -111,7 +111,7 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
               <option value="lb">lb</option>
             </select>
             {plannedSets.length > 1 && (
-              <button type="button" onClick={() => handleRemoveSet(index)} className="text-gray-400 hover:text-red-500">
+              <button type="button" onClick={() => handleRemoveSet(index)} className="text-gray-600 dark:text-gray-400 hover:text-red-500">
                 <Trash2 size={18} />
               </button>
             )}

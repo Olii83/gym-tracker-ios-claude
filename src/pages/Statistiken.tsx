@@ -69,10 +69,10 @@ const Statistiken = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-3xl font-bold text-white">Statistiken</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Statistiken</h1>
       
       <select
-        className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+        className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
         value={selectedExerciseId}
         onChange={(e) => setSelectedExerciseId(e.target.value)}
       >
@@ -83,12 +83,12 @@ const Statistiken = () => {
       </select>
 
       {selectedExerciseId && selectedExerciseLogs.length > 0 ? (
-        <div className="bg-gray-900 rounded-lg p-4">
+        <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4">
           <Line options={chartOptions} data={chartData} />
         </div>
       ) : (
-        <div className="text-center py-20 px-4 bg-gray-900 rounded-lg">
-          <p className="text-gray-400">Wähle eine Übung aus, um deinen Fortschritt zu sehen.</p>
+        <div className="text-center py-20 px-4 bg-gray-100 dark:bg-gray-900 rounded-lg">
+          <p className="text-gray-600 dark:text-gray-400">Wähle eine Übung aus, um deinen Fortschritt zu sehen.</p>
         </div>
       )}
     </div>

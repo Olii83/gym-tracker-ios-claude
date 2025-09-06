@@ -39,7 +39,7 @@ const AddLogForm = ({ onClose }: AddLogFormProps) => {
         <label htmlFor="exercise" className="block text-sm font-medium text-gray-300 mb-1">Übung</label>
         <select
           id="exercise"
-          className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+          className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
           value={selectedExercise}
           onChange={(e) => setSelectedExercise(e.target.value)}
         >
@@ -53,7 +53,7 @@ const AddLogForm = ({ onClose }: AddLogFormProps) => {
           <label htmlFor="reps" className="block text-sm font-medium text-gray-300 mb-1">Wiederholungen</label>
           <input
             id="reps"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+            className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
             type="number"
             placeholder='12'
             value={reps}
@@ -64,7 +64,7 @@ const AddLogForm = ({ onClose }: AddLogFormProps) => {
           <label htmlFor="weight" className="block text-sm font-medium text-gray-300 mb-1">Gewicht (kg)</label>
           <input
             id="weight"
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+            className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
             type="number"
             step="0.25"
             placeholder='60'

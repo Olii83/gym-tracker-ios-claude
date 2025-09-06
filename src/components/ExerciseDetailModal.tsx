@@ -23,12 +23,16 @@ const ExerciseDetailModal = ({ exercise, onClose }: ExerciseDetailModalProps) =>
     setIsAddingToTraining(true);
     
     try {
-      // Navigate to training detail page with exercise pre-selected
-      window.location.href = `/trainings/${selectedTrainingId}?addExercise=${exercise.id}`;
+      // Close the modal first
+      onClose();
+      
+      // Use setTimeout to ensure modal closes before navigation
+      setTimeout(() => {
+        window.location.href = `/trainings/${selectedTrainingId}?addExercise=${exercise.id}`;
+      }, 100);
     } catch (error) {
       console.error('Fehler beim Hinzufügen zur Training:', error);
       alert('Fehler beim Hinzufügen zur Training.');
-    } finally {
       setIsAddingToTraining(false);
     }
   };
@@ -70,7 +74,7 @@ const ExerciseDetailModal = ({ exercise, onClose }: ExerciseDetailModalProps) =>
         <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500 rounded-full">
           <Dumbbell size={32} className="text-white" />
         </div>
-        <h2 className="text-2xl font-bold text-white">{exercise.name}</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{exercise.name}</h2>
         
         {/* Exercise Badges */}
         <div className="flex justify-center space-x-2 flex-wrap gap-2">
@@ -94,22 +98,22 @@ const ExerciseDetailModal = ({ exercise, onClose }: ExerciseDetailModalProps) =>
       </div>
 
       {/* Exercise Details */}
-      <div className="bg-gray-800 rounded-lg p-4 space-y-3">
-        <h3 className="text-lg font-semibold text-white mb-2">Übungsdetails</h3>
+      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 space-y-3">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Übungsdetails</h3>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <span className="text-gray-400">Muskelgruppe:</span>
-            <p className="text-white font-medium">{exercise.muscle_group}</p>
+            <span className="text-gray-600 dark:text-gray-400">Muskelgruppe:</span>
+            <p className="text-gray-900 dark:text-white font-medium">{exercise.muscle_group}</p>
           </div>
           {exercise.equipment && (
             <div>
-              <span className="text-gray-400">Equipment:</span>
-              <p className="text-white font-medium">{exercise.equipment}</p>
+              <span className="text-gray-600 dark:text-gray-400">Equipment:</span>
+              <p className="text-gray-900 dark:text-white font-medium">{exercise.equipment}</p>
             </div>
           )}
           <div>
-            <span className="text-gray-400">Typ:</span>
-            <p className="text-white font-medium">
+            <span className="text-gray-600 dark:text-gray-400">Typ:</span>
+            <p className="text-gray-900 dark:text-white font-medium">
               {exercise.user_id === null ? 'Standard-Übung' : 'Eigene Übung'}
             </p>
           </div>
@@ -118,8 +122,8 @@ const ExerciseDetailModal = ({ exercise, onClose }: ExerciseDetailModalProps) =>
 
       {/* Add to Training Section */}
       {trainings.length > 0 && (
-        <div className="bg-gray-800 rounded-lg p-4 space-y-4">
-          <h3 className="text-lg font-semibold text-white flex items-center">
+        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
             <Plus size={20} className="mr-2 text-red-500" />
             Zu Training hinzufügen
           </h3>
@@ -127,7 +131,7 @@ const ExerciseDetailModal = ({ exercise, onClose }: ExerciseDetailModalProps) =>
             <select
               value={selectedTrainingId}
               onChange={(e) => setSelectedTrainingId(e.target.value)}
-              className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+              className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
             >
               <option value="">Training auswählen...</option>
               {trainings.map(training => (
@@ -149,8 +153,8 @@ const ExerciseDetailModal = ({ exercise, onClose }: ExerciseDetailModalProps) =>
 
       {/* No Trainings Message */}
       {trainings.length === 0 && (
-        <div className="bg-gray-800 rounded-lg p-4 text-center">
-          <div className="text-gray-400 mb-2">
+        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-center">
+          <div className="text-gray-600 dark:text-gray-400 mb-2">
             <Plus size={32} className="mx-auto mb-2 opacity-50" />
             <p>Keine Trainings vorhanden</p>
             <p className="text-sm">Erstelle erst ein Training, um Übungen hinzuzufügen.</p>

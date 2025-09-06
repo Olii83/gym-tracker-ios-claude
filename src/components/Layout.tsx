@@ -11,7 +11,7 @@ const navItems = [
 
 const Layout = () => {
   return (
-    <div className="bg-black text-white min-h-screen font-sans" style={{
+    <div className="bg-white dark:bg-black text-gray-900 dark:text-white min-h-screen font-sans" style={{
       paddingTop: 'var(--safe-area-inset-top)',
       paddingLeft: 'var(--safe-area-inset-left)',
       paddingRight: 'var(--safe-area-inset-right)',
@@ -19,7 +19,7 @@ const Layout = () => {
       <main className="pb-20" style={{ paddingBottom: `calc(5rem + var(--safe-area-inset-bottom))` }}>
         <Outlet />
       </main>
-      <nav className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around" style={{
+      <nav className="fixed bottom-0 left-0 right-0 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex justify-around" style={{
         paddingBottom: 'var(--safe-area-inset-bottom)',
         paddingLeft: 'var(--safe-area-inset-left)',
         paddingRight: 'var(--safe-area-inset-right)',
@@ -31,7 +31,7 @@ const Layout = () => {
             end
             className={({ isActive }) =>
               `flex flex-col items-center justify-center w-full pt-2 pb-1 text-xs ` +
-              (isActive ? 'text-red-500' : 'text-gray-400')
+              (isActive ? 'text-red-500' : 'text-gray-600 dark:text-gray-400')
             }
           >
             <Icon size={24} />

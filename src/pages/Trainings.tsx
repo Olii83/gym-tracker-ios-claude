@@ -26,28 +26,28 @@ const Trainings = () => {
   return (
     <div className="p-4 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-white">Trainings</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Trainings</h1>
       </div>
 
       <Button onClick={() => setIsAddModalOpen(true)}>Neues Training erstellen</Button>
 
       <div className="space-y-4">
         {trainings.length === 0 ? (
-          <div className="text-center py-10 px-4 bg-gray-900 rounded-lg">
-            <p className="text-gray-400">Noch keine Trainings erstellt.</p>
-            <p className="text-gray-500 text-sm">Erstelle ein neues Training, um zu starten.</p>
+          <div className="text-center py-10 px-4 bg-gray-100 dark:bg-gray-900 rounded-lg">
+            <p className="text-gray-600 dark:text-gray-400">Noch keine Trainings erstellt.</p>
+            <p className="text-gray-500 dark:text-gray-500 text-sm">Erstelle ein neues Training, um zu starten.</p>
           </div>
         ) : (
           trainings.map((training: Training) => (
-            <div key={training.id} className="bg-gray-900 rounded-lg p-4 flex justify-between items-center">
-              <Link to={`/trainings/${training.id}`} className="font-bold text-lg text-white hover:text-red-500">
+            <div key={training.id} className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 flex justify-between items-center">
+              <Link to={`/trainings/${training.id}`} className="font-bold text-lg text-gray-900 dark:text-white hover:text-red-500">
                 {training.name}
               </Link>
               <div className="flex space-x-2">
                 <Link to={`/track/${training.id}`}>
                   <Button variant="secondary" className="px-3 py-1 text-sm">Training starten</Button>
                 </Link>
-                <button onClick={() => handleDeleteTraining(training.id)} className="text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+                <button onClick={() => handleDeleteTraining(training.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
               </div>
             </div>
           ))

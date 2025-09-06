@@ -80,7 +80,7 @@ const Uebungen = () => {
   return (
     <div className="p-4 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-white">Übungen</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Übungen</h1>
       </div>
 
       {/* Search and Filter Section */}
@@ -93,7 +93,7 @@ const Uebungen = () => {
             placeholder="Übungen durchsuchen..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-gray-900 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
           />
         </div>
 
@@ -104,7 +104,7 @@ const Uebungen = () => {
             <select
               value={selectedMuscleGroup}
               onChange={(e) => setSelectedMuscleGroup(e.target.value)}
-              className="bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
             >
               <option value="">Alle Muskelgruppen</option>
               {muscleGroups.map(group => (
@@ -114,7 +114,7 @@ const Uebungen = () => {
             <select
               value={selectedEquipment}
               onChange={(e) => setSelectedEquipment(e.target.value)}
-              className="bg-gray-800 border border-gray-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
+              className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-red-600"
             >
               <option value="">Alle Geräte</option>
               {equipmentTypes.map(equipment => (
@@ -125,7 +125,7 @@ const Uebungen = () => {
           {(searchTerm || selectedMuscleGroup || selectedEquipment) && (
             <button
               onClick={clearFilters}
-              className="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-gray-300 text-sm rounded-lg transition-colors"
+              className="px-3 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-lg transition-colors"
             >
               Filter zurücksetzen
             </button>
@@ -141,10 +141,10 @@ const Uebungen = () => {
       {filteredExercises.length === 0 ? (
         <div className="text-center py-12">
           <Search size={48} className="text-gray-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-400 mb-2">
+          <h3 className="text-lg font-medium text-gray-600 dark:text-gray-400 mb-2">
             Keine Übungen gefunden
           </h3>
-          <p className="text-gray-500">
+          <p className="text-gray-500 dark:text-gray-500">
             Versuche andere Suchbegriffe oder Filter.
           </p>
         </div>
@@ -159,25 +159,25 @@ const Uebungen = () => {
                 <h2 className="text-xl font-semibold text-red-500 mb-3">
                   {group} ({groupExercises.length})
                 </h2>
-                <div className="bg-gray-900 rounded-lg">
+                <div className="bg-gray-100 dark:bg-gray-900 rounded-lg">
                   {groupExercises.map((exercise, index, arr) => (
                     <div
                       key={exercise.id}
-                      className={`p-4 flex justify-between items-center cursor-pointer hover:bg-gray-800 transition-colors ${
-                        index < arr.length - 1 ? 'border-b border-gray-800' : ''
+                      className={`p-4 flex justify-between items-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors ${
+                        index < arr.length - 1 ? 'border-b border-gray-200 dark:border-gray-800' : ''
                       }`}
                       onClick={() => handleExerciseClick(exercise)}
                     >
                       <div className="flex-1">
-                        <p className="font-medium text-white">{exercise.name}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{exercise.name}</p>
                         <div className="flex items-center space-x-2 mt-1">
                           {exercise.equipment && (
-                            <span className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded">
+                            <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">
                               {exercise.equipment}
                             </span>
                           )}
                           {exercise.user_id === null && (
-                            <span className="text-xs text-gray-500">Standard-Übung</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-500">Standard-Übung</span>
                           )}
                         </div>
                       </div>
@@ -188,7 +188,7 @@ const Uebungen = () => {
                               e.stopPropagation();
                               handleEditExercise(exercise);
                             }}
-                            className="text-gray-400 hover:text-blue-500 p-1"
+                            className="text-gray-600 dark:text-gray-400 hover:text-blue-500 p-1"
                             title="Übung bearbeiten"
                           >
                             <Edit3 size={18} />
@@ -198,7 +198,7 @@ const Uebungen = () => {
                               e.stopPropagation();
                               handleDeleteExercise(exercise);
                             }}
-                            className="text-gray-400 hover:text-red-500 p-1"
+                            className="text-gray-600 dark:text-gray-400 hover:text-red-500 p-1"
                             title="Übung löschen"
                           >
                             <Trash2 size={18} />

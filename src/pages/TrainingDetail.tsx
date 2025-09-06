@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
@@ -10,7 +10,8 @@ import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 
 const TrainingDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { trainings, trainingExercises, exercises, trainingPlannedSets, deleteTrainingExercise, deleteTrainingPlannedSet } = useData();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { trainings, trainingExercises, exercises, trainingPlannedSets, deleteTrainingExercise, deleteTrainingPlannedSet, addTrainingExercise } = useData();
   const navigate = useNavigate();
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false);
   const [isPlannedSetModalOpen, setIsPlannedSetModalOpen] = useState(false);
@@ -20,8 +21,63 @@ const TrainingDetail = () => {
 
   const training = trainings.find(t => t.id === parseInt(id || ''));
 
+  const handleAddExerciseFromUrl = async (exerciseId: number) => {
+    if (!training) return;
+    
+    try {
+      const currentExercises = trainingExercises.filter(te => te.training_id === training.id);
+      const order = currentExercises.length > 0 
+        ? Math.max(...currentExercises.map(te => te.order)) + 1 
+        : 0;
+
+      await addTrainingExercise(
+        {
+          training_id: training.id,
+          exercise_id: exerciseId,
+          planned_sets: 1,
+          order: order,
+        },
+        [{ 
+          training_exercise_id: 0,
+          set_number: 1, 
+          planned_reps: null, 
+          planned_weight: null, 
+          planned_unit: 'kg' 
+        }]
+      );
+
+      // Remove the parameter after adding
+      setSearchParams({});
+    } catch (error) {
+      console.error('Fehler beim Hinzufügen der Übung:', error);
+      alert('Fehler beim Hinzufügen der Übung zum Training.');
+    }
+  };
+
+  // Handle adding exercise from URL parameter
+  useEffect(() => {
+    const addExerciseId = searchParams.get('addExercise');
+    if (addExerciseId && training && !isAddExerciseModalOpen) {
+      handleAddExerciseFromUrl(parseInt(addExerciseId));
+    }
+  }, [searchParams.get('addExercise'), training?.id]);
+
+  // Show loading state while data is being fetched
+  if (!training && trainings.length === 0) {
+    return (
+      <div className="p-4 text-gray-900 dark:text-white">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-2"></div>
+            <p>Training wird geladen...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!training) {
-    return <div className="p-4 text-white">Training nicht gefunden.</div>;
+    return <div className="p-4 text-gray-900 dark:text-white">Training nicht gefunden.</div>;
   }
 
   const exercisesInTraining = trainingExercises.filter(te => te.training_id === training.id)
@@ -63,7 +119,7 @@ const TrainingDetail = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-3xl font-bold text-white">{training.name}</h1>
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{training.name}</h1>
 
       <Button onClick={() => setIsAddExerciseModalOpen(true)} variant="secondary">
         <div className="flex items-center justify-center space-x-2">
@@ -74,29 +130,29 @@ const TrainingDetail = () => {
 
       <div className="space-y-4">
         {exercisesInTraining.length === 0 ? (
-          <div className="text-center py-10 px-4 bg-gray-900 rounded-lg">
-            <p className="text-gray-400">Noch keine Übungen in diesem Training.</p>
-            <p className="text-gray-500 text-sm">Füge Übungen hinzu, um dein Training zu planen.</p>
+          <div className="text-center py-10 px-4 bg-gray-100 dark:bg-gray-900 rounded-lg">
+            <p className="text-gray-600 dark:text-gray-400">Noch keine Übungen in diesem Training.</p>
+            <p className="text-gray-500 dark:text-gray-500 text-sm">Füge Übungen hinzu, um dein Training zu planen.</p>
           </div>
         ) : (
           exercisesInTraining.map((te) => (
-            <div key={te.id} className="bg-gray-900 rounded-lg p-4 space-y-3">
+            <div key={te.id} className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 space-y-3">
               <div className="flex justify-between items-center">
                 <h2 className="font-bold text-lg text-red-500">{te.exercise_name}</h2>
                 <div className="flex space-x-2">
-                  <button onClick={() => handleDeleteTrainingExercise(te.id)} className="text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+                  <button onClick={() => handleDeleteTrainingExercise(te.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
                 </div>
               </div>
               
-              <p className="text-gray-400">Geplante Sätze: {te.planned_sets}</p>
+              <p className="text-gray-600 dark:text-gray-400">Geplante Sätze: {te.planned_sets}</p>
 
               <div className="space-y-1">
                 {te.plannedSets.map(ps => (
                   <div key={ps.id} className="flex justify-between items-center text-white py-1">
-                    <span>Set {ps.set_number}: {ps.planned_reps || '?'} reps x {ps.planned_weight || '?'} {ps.planned_unit || 'kg'}</span>
+                    <span className="text-gray-900 dark:text-white">Set {ps.set_number}: {ps.planned_reps || '?'} reps x {ps.planned_weight || '?'} {ps.planned_unit || 'kg'}</span>
                     <div className="flex space-x-2">
-                      <button onClick={() => handleEditPlannedSet(te, ps)} className="text-gray-400 hover:text-red-500"><Edit size={18} /></button>
-                      <button onClick={() => handleDeletePlannedSet(ps.id)} className="text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+                      <button onClick={() => handleEditPlannedSet(te, ps)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Edit size={18} /></button>
+                      <button onClick={() => handleDeletePlannedSet(ps.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
                     </div>
                   </div>
                 ))}

@@ -173,7 +173,7 @@ const Logs = () => {
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             selectedFilter === 'all'
               ? 'bg-red-600 text-white'
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
           }`}
         >
           Alle
@@ -183,7 +183,7 @@ const Logs = () => {
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             selectedFilter === 'week'
               ? 'bg-red-600 text-white'
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
           }`}
         >
           Diese Woche
@@ -193,7 +193,7 @@ const Logs = () => {
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             selectedFilter === 'month'
               ? 'bg-red-600 text-white'
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              : 'bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-700'
           }`}
         >
           Dieser Monat
@@ -218,7 +218,7 @@ const Logs = () => {
             const uniqueExercises = [...new Set(logsForDate.map(log => log.exercise_id))];
             
             return (
-              <div key={date} className="bg-gray-900 rounded-lg p-4">
+              <div key={date} className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4">
                 {/* Date Header */}
                 <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-gray-800">
                   <Calendar size={20} className="text-red-500" />
@@ -259,7 +259,7 @@ const Logs = () => {
                     const maxWeight = Math.max(...exerciseLogs.map((log: WorkoutLog) => log.weight));
 
                     return (
-                      <div key={exerciseId} className="bg-gray-800 rounded-lg p-3">
+                      <div key={exerciseId} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2">
                             <Dumbbell size={16} className="text-red-500" />
