@@ -13,7 +13,7 @@ const Trainings = () => {
   const navigate = useNavigate();
 
   const handleDeleteTraining = async (trainingId: number) => {
-    if (window.confirm('Are you sure you want to delete this training?')) {
+    if (window.confirm('Bist du sicher, dass du dieses Training löschen möchtest?')) {
       await deleteTraining(trainingId);
     }
   };
@@ -45,7 +45,7 @@ const Trainings = () => {
               </Link>
               <div className="flex space-x-2">
                 <Link to={`/track/${training.id}`}>
-                  <Button variant="secondary" className="px-3 py-1 text-sm">Start Training</Button>
+                  <Button variant="secondary" className="px-3 py-1 text-sm">Training starten</Button>
                 </Link>
                 <button onClick={() => handleDeleteTraining(training.id)} className="text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
               </div>
