@@ -11,11 +11,19 @@ const navItems = [
 
 const Layout = () => {
   return (
-    <div className="bg-black text-white min-h-screen font-sans">
-      <main className="pb-20">
+    <div className="bg-black text-white min-h-screen font-sans" style={{
+      paddingTop: 'var(--safe-area-inset-top)',
+      paddingLeft: 'var(--safe-area-inset-left)',
+      paddingRight: 'var(--safe-area-inset-right)',
+    }}>
+      <main className="pb-20" style={{ paddingBottom: `calc(5rem + var(--safe-area-inset-bottom))` }}>
         <Outlet />
       </main>
-      <nav className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around">
+      <nav className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around" style={{
+        paddingBottom: 'var(--safe-area-inset-bottom)',
+        paddingLeft: 'var(--safe-area-inset-left)',
+        paddingRight: 'var(--safe-area-inset-right)',
+      }}>
         {navItems.map(({ path, label, icon: Icon }) => (
           <NavLink
             key={path}
