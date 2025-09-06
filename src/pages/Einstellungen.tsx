@@ -74,7 +74,7 @@ const Einstellungen = () => {
             label="Akzentfarbe"
             description="Wähle deine bevorzugte Farbe für Buttons und Hervorhebungen"
             action={
-              <div className="flex items-center space-x-2">
+              <div className="grid grid-cols-3 gap-2 w-fit">
                 {Object.entries(accentColors).map(([colorKey, colorData]) => (
                   <button
                     key={colorKey}
