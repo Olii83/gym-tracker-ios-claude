@@ -51,7 +51,7 @@ const PlannedSetForm = ({ trainingExerciseId, setNumber, initialData, onClose }:
       <h3 className="text-lg font-semibold text-white">Set {setNumber}</h3>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="plannedReps" className="block text-sm font-medium text-gray-300 mb-1">Planned Reps</label>
+          <label htmlFor="plannedReps" className="block text-sm font-medium text-gray-300 mb-1">Geplante Wiederholungen</label>
           <input
             id="plannedReps"
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -61,7 +61,7 @@ const PlannedSetForm = ({ trainingExerciseId, setNumber, initialData, onClose }:
           />
         </div>
         <div>
-          <label htmlFor="plannedWeight" className="block text-sm font-medium text-gray-300 mb-1">Planned Weight</label>
+          <label htmlFor="plannedWeight" className="block text-sm font-medium text-gray-300 mb-1">Geplantes Gewicht</label>
           <input
             id="plannedWeight"
             className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -73,7 +73,7 @@ const PlannedSetForm = ({ trainingExerciseId, setNumber, initialData, onClose }:
         </div>
       </div>
       <div>
-        <label htmlFor="plannedUnit" className="block text-sm font-medium text-gray-300 mb-1">Unit</label>
+        <label htmlFor="plannedUnit" className="block text-sm font-medium text-gray-300 mb-1">Einheit</label>
         <select
           id="plannedUnit"
           className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-red-600"
@@ -86,7 +86,7 @@ const PlannedSetForm = ({ trainingExerciseId, setNumber, initialData, onClose }:
       </div>
       <div className="pt-2">
         <Button type="submit" disabled={loading}>
-          {initialData ? 'Update Planned Set' : 'Add Planned Set'}
+          {initialData ? 'Geplanten Satz aktualisieren' : 'Geplanten Satz hinzufügen'}
         </Button>
       </div>
     </form>
