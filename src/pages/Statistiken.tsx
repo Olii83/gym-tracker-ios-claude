@@ -201,49 +201,49 @@ const Statistiken = () => {
         <div className="space-y-6">
           {/* Personal Records Section */}
           {personalRecords && (
-            <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-3">
+              <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
                 Persönliche Bestleistungen (PRs)
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Max Weight */}
-                <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-4">
-                  <h3 className={`font-medium mb-2 ${text}`}>Höchstgewicht</h3>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-3">
+                  <h3 className={`font-medium mb-1 text-sm ${text}`}>Höchstgewicht</h3>
+                  <div className="text-xl font-bold text-gray-900 dark:text-white">
                     {personalRecords.maxWeight.weight}kg
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
                     {personalRecords.maxWeight.reps} Wdh.
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
                     {new Date(personalRecords.maxWeight.date).toLocaleDateString('de-DE')}
                   </div>
                 </div>
 
                 {/* Max Reps */}
-                <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-4">
-                  <h3 className={`font-medium mb-2 ${text}`}>Meiste Wiederholungen</h3>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-3">
+                  <h3 className={`font-medium mb-1 text-sm ${text}`}>Meiste Wiederholungen</h3>
+                  <div className="text-xl font-bold text-gray-900 dark:text-white">
                     {personalRecords.maxReps.reps} Wdh.
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
                     {personalRecords.maxReps.weight}kg
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
                     {new Date(personalRecords.maxReps.date).toLocaleDateString('de-DE')}
                   </div>
                 </div>
 
                 {/* Max Volume */}
-                <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-4">
-                  <h3 className={`font-medium mb-2 ${text}`}>Höchstes Volumen</h3>
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
+                <div className="bg-gray-200 dark:bg-gray-800 rounded-lg p-3">
+                  <h3 className={`font-medium mb-1 text-sm ${text}`}>Höchstes Volumen</h3>
+                  <div className="text-xl font-bold text-gray-900 dark:text-white">
                     {personalRecords.maxVolume.volume}kg
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <div className="text-xs text-gray-600 dark:text-gray-400">
                     {personalRecords.maxVolume.reps} × {personalRecords.maxVolume.weight}kg
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
                     {new Date(personalRecords.maxVolume.date).toLocaleDateString('de-DE')}
                   </div>
                 </div>
@@ -252,7 +252,7 @@ const Statistiken = () => {
           )}
 
           {/* Chart Section */}
-          <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4">
+          <div className="bg-gray-100 dark:bg-gray-900 rounded-lg p-3">
             <Line options={chartOptions} data={chartData} />
           </div>
         </div>
