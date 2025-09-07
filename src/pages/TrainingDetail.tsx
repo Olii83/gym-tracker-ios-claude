@@ -253,7 +253,7 @@ const TrainingDetail = () => {
                               <div className="space-y-1">
                                 {te.plannedSets.map((ps: TrainingPlannedSet) => (
                                   <div key={ps.id} className="flex justify-between items-center text-white py-1">
-                                    <span className="text-gray-900 dark:text-white">Set {ps.set_number}: {ps.planned_reps || '?'} reps x {ps.planned_weight || '?'} {ps.planned_unit || 'kg'}</span>
+                                    <span className="text-gray-900 dark:text-white">Satz {ps.set_number}: {ps.planned_reps || '?'} Wdh. × {ps.planned_weight || '?'} {ps.planned_unit || 'kg'}</span>
                                     <div className="flex space-x-2">
                                       <button onClick={() => handleEditPlannedSet(te, ps)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Edit size={18} /></button>
                                       <button onClick={() => handleDeletePlannedSet(ps.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>

@@ -270,7 +270,7 @@ const Logs = () => {
                             </h3>
                           </div>
                           <div className="text-sm text-gray-400">
-                            {totalSets} Set{totalSets !== 1 ? 's' : ''}
+                            {totalSets} Satz{totalSets !== 1 ? 'e' : ''}
                           </div>
                         </div>
                         
@@ -299,7 +299,7 @@ const Logs = () => {
                                   <span className="text-white text-xs">✓</span>
                                 </div>
                               )}
-                              <span className="text-gray-400">Set {index + 1}:</span>
+                              <span className="text-gray-400">Satz {index + 1}:</span>
                               <span className="text-white ml-1">
                                 {log.reps} × {log.weight}kg
                               </span>

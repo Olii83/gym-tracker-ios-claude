@@ -1,8 +1,11 @@
 import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
+import { useAccentColor } from '../hooks/useAccentColor';
 import Button from '../components/Button';
-import { Check, Plus } from 'lucide-react';
+import Modal from '../components/Modal';
+import AddTrainingExerciseForm from '../components/AddTrainingExerciseForm';
+import { Check, Plus, PlusCircle } from 'lucide-react';
 import type { WorkoutLog } from '../interfaces';
 
 interface CompletedSet {
@@ -22,12 +25,14 @@ interface ExtraSetData {
 const TrackingPage = () => {
   const { id } = useParams<{ id: string }>();
   const { trainings, trainingExercises, exercises, trainingPlannedSets, addLog } = useData();
+  const { text } = useAccentColor();
   const navigate = useNavigate();
 
   // Always call hooks first
   const [, setCurrentLogs] = useState<Record<number, WorkoutLog[]>>({});
   const [completedSets, setCompletedSets] = useState<Record<string, CompletedSet>>({});
   const [extraSets, setExtraSets] = useState<Record<number, ExtraSetData[]>>({});
+  const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false);
 
   // Early returns after all hooks
   const training = trainings.find(t => t.id === parseInt(id || ''));
@@ -146,12 +151,12 @@ const TrackingPage = () => {
       <div key={setKey} className="space-y-2">
         <div className="flex justify-between items-center text-white">
           <span className={isCompleted ? 'line-through text-gray-500' : ''}>
-            Set {setNumber}: {plannedReps || '?'} reps x {plannedWeight || '?'} {plannedUnit || 'kg'} 
+            Satz {setNumber}: {plannedReps || '?'} Wdh. × {plannedWeight || '?'} {plannedUnit || 'kg'} 
             {isExtra ? ' (Extra)' : ' (Geplant)'}
           </span>
           {isCompleted && completedData && (
             <span className="text-green-500 text-sm">
-              ✓ {completedData.reps} reps x {completedData.weight} kg
+              ✓ {completedData.reps} Wdh. × {completedData.weight} kg
             </span>
           )}
         </div>
@@ -195,7 +200,17 @@ const TrackingPage = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-3xl font-bold text-white">Tracking: {training.name}</h1>
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-white">Tracking: {training.name}</h1>
+        <button
+          onClick={() => setIsAddExerciseModalOpen(true)}
+          className="flex items-center space-x-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+          title="Spontan Übung hinzufügen"
+        >
+          <PlusCircle size={18} />
+          <span>Übung hinzufügen</span>
+        </button>
+      </div>
 
       {exercisesInTraining.length === 0 ? (
         <div className="text-center py-10 px-4 bg-gray-900 rounded-lg">
@@ -206,7 +221,7 @@ const TrackingPage = () => {
         exercisesInTraining.map((te) => (
           <div key={te.id} className="bg-gray-900 rounded-lg p-4 space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="font-bold text-lg text-red-500">{te.exercise_name}</h2>
+              <h2 className={`font-bold text-lg ${text}`}>{te.exercise_name}</h2>
               <button
                 onClick={() => addExtraSet(te.id)}
                 className="flex items-center space-x-1 text-blue-500 hover:text-blue-400 text-sm"
@@ -233,6 +248,18 @@ const TrackingPage = () => {
       <div className="pt-4">
         <Button onClick={handleFinishTraining}>Fertig</Button>
       </div>
+
+      {/* Modal für Übung hinzufügen */}
+      <Modal 
+        isOpen={isAddExerciseModalOpen} 
+        onClose={() => setIsAddExerciseModalOpen(false)} 
+        title="Übung zum Training hinzufügen"
+      >
+        <AddTrainingExerciseForm 
+          trainingId={training.id} 
+          onClose={() => setIsAddExerciseModalOpen(false)} 
+        />
+      </Modal>
     </div>
   );
 };
