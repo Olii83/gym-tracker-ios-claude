@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import Button from './Button';
-import type { TrainingPlannedSet } from '../interfaces';
 import { Filter, Search } from 'lucide-react';
 
 interface AddTrainingExerciseFormProps {
