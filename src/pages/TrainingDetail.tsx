@@ -5,6 +5,7 @@ import { useAccentColor } from '../hooks/useAccentColor';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AddTrainingExerciseForm from '../components/AddTrainingExerciseForm';
+import EditTrainingExerciseForm from '../components/EditTrainingExerciseForm';
 import PlannedSetForm from '../components/PlannedSetForm';
 import type { TrainingExercise, TrainingPlannedSet } from '../interfaces';
 import { PlusCircle, Edit, Trash2, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
@@ -23,6 +24,8 @@ const TrainingDetail = () => {
   const [plannedSetNumber, setPlannedSetNumber] = useState(0);
   const [localExerciseOrder, setLocalExerciseOrder] = useState<any[]>([]);
   const [expandedExercises, setExpandedExercises] = useState<Set<number>>(new Set());
+  const [isEditTrainingExerciseModalOpen, setIsEditTrainingExerciseModalOpen] = useState(false);
+  const [editingTrainingExercise, setEditingTrainingExercise] = useState<TrainingExercise | null>(null);
 
   const training = trainings.find(t => t.id === parseInt(id || ''));
 
@@ -142,6 +145,11 @@ const TrainingDetail = () => {
     setIsPlannedSetModalOpen(true);
   };
 
+  const handleEditTrainingExercise = (trainingExercise: TrainingExercise) => {
+    setEditingTrainingExercise(trainingExercise);
+    setIsEditTrainingExerciseModalOpen(true);
+  };
+
   const handleFinishEditing = () => {
     navigate('/'); // Navigate back to the Trainings overview
   };
@@ -244,7 +252,8 @@ const TrainingDetail = () => {
                               </button>
                             </div>
                             <div className="flex space-x-2 ml-2">
-                              <button onClick={() => handleDeleteTrainingExercise(te.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+                              <button onClick={() => handleEditTrainingExercise(te)} className="text-gray-600 dark:text-gray-400 hover:text-blue-500" title="Übung bearbeiten"><Edit size={18} /></button>
+                              <button onClick={() => handleDeleteTrainingExercise(te.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500" title="Übung löschen"><Trash2 size={18} /></button>
                             </div>
                           </div>
                           
@@ -291,6 +300,15 @@ const TrainingDetail = () => {
       <Modal isOpen={isAddExerciseModalOpen} onClose={() => setIsAddExerciseModalOpen(false)} title="Übung zum Training hinzufügen">
         <AddTrainingExerciseForm trainingId={training.id} onClose={() => setIsAddExerciseModalOpen(false)} />
       </Modal>
+
+      {editingTrainingExercise && (
+        <Modal isOpen={isEditTrainingExerciseModalOpen} onClose={() => setIsEditTrainingExerciseModalOpen(false)} title="Übung bearbeiten">
+          <EditTrainingExerciseForm 
+            trainingExercise={editingTrainingExercise} 
+            onClose={() => setIsEditTrainingExerciseModalOpen(false)} 
+          />
+        </Modal>
+      )}
 
       {selectedTrainingExercise && (
         <Modal isOpen={isPlannedSetModalOpen} onClose={() => setIsPlannedSetModalOpen(false)} title={selectedPlannedSet ? 'Geplanten Satz bearbeiten' : `Geplanten Satz ${plannedSetNumber} hinzufügen`}>

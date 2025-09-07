@@ -5,7 +5,8 @@ import { useAccentColor } from '../hooks/useAccentColor';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AddTrainingExerciseForm from '../components/AddTrainingExerciseForm';
-import { Check, Plus, PlusCircle, GripVertical, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import EditTrainingExerciseForm from '../components/EditTrainingExerciseForm';
+import { Check, Plus, PlusCircle, GripVertical, ChevronDown, ChevronRight, Trash2, Edit } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import type { WorkoutLog } from '../interfaces';
 
@@ -36,6 +37,8 @@ const TrackingPage = () => {
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false);
   const [expandedExercises, setExpandedExercises] = useState<Set<number>>(new Set());
   const [localExerciseOrder, setLocalExerciseOrder] = useState<any[]>([]);
+  const [isEditTrainingExerciseModalOpen, setIsEditTrainingExerciseModalOpen] = useState(false);
+  const [editingTrainingExercise, setEditingTrainingExercise] = useState<any>(null);
 
   // Early returns after all hooks
   const training = trainings.find(t => t.id === parseInt(id || ''));
@@ -205,6 +208,11 @@ const TrackingPage = () => {
         return newCompleted;
       });
     }
+  };
+
+  const handleEditTrainingExercise = (trainingExercise: any) => {
+    setEditingTrainingExercise(trainingExercise);
+    setIsEditTrainingExerciseModalOpen(true);
   };
 
   const renderSet = (
@@ -386,13 +394,22 @@ const TrackingPage = () => {
                               </span>
                             </button>
                           </div>
-                          <button
-                            onClick={() => handleDeleteTrainingExercise(te.id, te.exercise_name)}
-                            className="text-red-400 hover:text-red-300 p-1"
-                            title="Übung aus Training entfernen"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => handleEditTrainingExercise(te)}
+                              className="text-blue-400 hover:text-blue-300 p-1"
+                              title="Übung bearbeiten"
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTrainingExercise(te.id, te.exercise_name)}
+                              className="text-red-400 hover:text-red-300 p-1"
+                              title="Übung aus Training entfernen"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
                         </div>
                         
                         {expandedExercises.has(te.id) && (
@@ -446,6 +463,20 @@ const TrackingPage = () => {
           onClose={() => setIsAddExerciseModalOpen(false)} 
         />
       </Modal>
+
+      {/* Modal für Übung bearbeiten */}
+      {editingTrainingExercise && (
+        <Modal 
+          isOpen={isEditTrainingExerciseModalOpen} 
+          onClose={() => setIsEditTrainingExerciseModalOpen(false)} 
+          title="Übung bearbeiten"
+        >
+          <EditTrainingExerciseForm 
+            trainingExercise={editingTrainingExercise} 
+            onClose={() => setIsEditTrainingExerciseModalOpen(false)} 
+          />
+        </Modal>
+      )}
     </div>
   );
 };
