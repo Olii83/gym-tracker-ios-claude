@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../contexts/DataContext';
 import Button from './Button';
 import { Filter, Search } from 'lucide-react';
@@ -16,6 +16,8 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
   const [selectedExerciseId, setSelectedExerciseId] = useState('');
   const [plannedSetsCount, setPlannedSetsCount] = useState<number | ''>( 3);
   const [loading, setLoading] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Get unique muscle groups
   const muscleGroups = useMemo(() => {
@@ -55,7 +57,28 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
     setSelectedEquipment('');
     setSearchTerm('');
     setSelectedExerciseId('');
+    setShowSearchResults(false);
   };
+
+  const selectExerciseFromSearch = (exercise: any) => {
+    setSelectedExerciseId(exercise.id.toString());
+    setSearchTerm(exercise.name);
+    setShowSearchResults(false);
+  };
+
+  // Handle clicking outside the search container
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowSearchResults(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,15 +135,61 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
         </div>
         
         {/* Search Bar */}
-        <div className="relative">
+        <div className="relative" ref={searchContainerRef}>
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
             placeholder="Übung suchen..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setShowSearchResults(e.target.value.length > 0);
+              if (e.target.value.length === 0) {
+                setSelectedExerciseId('');
+              }
+            }}
+            onFocus={() => {
+              if (searchTerm.length > 0) {
+                setShowSearchResults(true);
+              }
+            }}
             className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
           />
+          
+          {/* Live Search Results */}
+          {showSearchResults && searchTerm.length > 0 && filteredExercises.length > 0 && (
+            <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {filteredExercises.slice(0, 8).map(exercise => (
+                <button
+                  key={exercise.id}
+                  type="button"
+                  onClick={() => selectExerciseFromSearch(exercise)}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-600 last:border-b-0 transition-colors"
+                >
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {exercise.name}
+                    </span>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {exercise.muscle_group}
+                      </div>
+                      {exercise.equipment && (
+                        <div className="text-xs text-gray-400 dark:text-gray-500">
+                          {exercise.equipment}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+              {filteredExercises.length > 8 && (
+                <div className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-750">
+                  {filteredExercises.length - 8} weitere Übungen...
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
