@@ -215,9 +215,9 @@ const TrackingPage = () => {
     setIsEditTrainingExerciseModalOpen(true);
   };
 
-  // Get the last tracked values for a specific exercise
-  const getLastTrackedValues = (exerciseId: number) => {
-    // Find all logs for this exercise, sorted by date (most recent first)
+  // Get the last tracked values for a specific exercise and set number
+  const getLastTrackedValuesForSet = (exerciseId: number, setNumber: number) => {
+    // Find all logs for this exercise, grouped by date
     const exerciseLogs = logs
       .filter(log => log.exercise_id === exerciseId)
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -226,10 +226,42 @@ const TrackingPage = () => {
       return { lastReps: null, lastWeight: null };
     }
 
-    // Use the most recent log for this exercise
+    // Group logs by date (training session) to get the most recent complete workout
+    const logsByDate: Record<string, typeof exerciseLogs> = {};
+    exerciseLogs.forEach(log => {
+      const dateKey = new Date(log.created_at).toDateString();
+      if (!logsByDate[dateKey]) {
+        logsByDate[dateKey] = [];
+      }
+      logsByDate[dateKey].push(log);
+    });
+
+    // Get the most recent training session
+    const dates = Object.keys(logsByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    if (dates.length === 0) {
+      return { lastReps: null, lastWeight: null };
+    }
+
+    const lastSessionLogs = logsByDate[dates[0]];
+    
+    // Try to find the specific set number from the last session
+    // Since we don't have set numbers in logs, we'll use the chronological order
+    // The first log of the day = set 1, second = set 2, etc.
+    const sortedSessionLogs = lastSessionLogs.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    
+    if (setNumber <= sortedSessionLogs.length) {
+      const targetLog = sortedSessionLogs[setNumber - 1]; // setNumber is 1-based
+      return {
+        lastReps: targetLog.reps,
+        lastWeight: targetLog.weight
+      };
+    }
+
+    // Fallback to last set of that session if setNumber is higher than available sets
+    const lastLog = sortedSessionLogs[sortedSessionLogs.length - 1];
     return {
-      lastReps: exerciseLogs[0].reps,
-      lastWeight: exerciseLogs[0].weight
+      lastReps: lastLog.reps,
+      lastWeight: lastLog.weight
     };
   };
 
@@ -248,18 +280,30 @@ const TrackingPage = () => {
     const completedData = completedSets[setKey];
     const inputId = `${setKey}`;
 
-    // Get last tracked values for this exercise, fallback to planned values
-    const { lastReps, lastWeight } = getLastTrackedValues(exerciseId);
-    const defaultReps = lastReps || plannedReps || '';
-    const defaultWeight = lastWeight || plannedWeight || '';
+    // Get last tracked values for this specific set
+    const { lastReps, lastWeight } = getLastTrackedValuesForSet(exerciseId, setNumber);
 
     return (
       <div key={setKey} className="space-y-2">
         <div className="flex justify-between items-center text-white">
-          <span className={isCompleted ? 'line-through text-gray-500' : ''}>
-            Satz {setNumber}: {plannedReps || '?'} Wdh. × {plannedWeight || '?'} {plannedUnit || 'kg'} 
-            {isExtra ? ' (Extra)' : ' (Geplant)'}
-          </span>
+          <div className={isCompleted ? 'line-through text-gray-500' : ''}>
+            <div className="text-sm">
+              <span className="font-medium">Satz {setNumber}:</span>
+              {!isExtra && (plannedReps || plannedWeight) && (
+                <span className="text-gray-400 ml-2">
+                  Geplant: {plannedReps || '?'} Wdh. × {plannedWeight || '?'} {plannedUnit || 'kg'}
+                </span>
+              )}
+              {lastReps && lastWeight && (
+                <span className="text-blue-400 ml-2">
+                  {isExtra ? 'Letztes Mal: ' : ' | Letztes Mal: '}{lastReps} Wdh. × {lastWeight} kg
+                </span>
+              )}
+              {isExtra && !lastReps && !lastWeight && (
+                <span className="text-gray-400 ml-2">(Extra)</span>
+              )}
+            </div>
+          </div>
           <div className="flex items-center space-x-2">
             {isCompleted && completedData && (
               <span className="text-green-500 text-sm">
@@ -282,7 +326,6 @@ const TrackingPage = () => {
             type="number"
             inputMode="numeric"
             placeholder="Wiederholungen"
-            defaultValue={defaultReps}
             disabled={isCompleted}
             className={`w-1/3 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
             id={`reps-${inputId}`}
@@ -292,7 +335,6 @@ const TrackingPage = () => {
             inputMode="decimal"
             step="0.25"
             placeholder="Gewicht"
-            defaultValue={defaultWeight}
             disabled={isCompleted}
             className={`w-1/3 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
             id={`weight-${inputId}`}
