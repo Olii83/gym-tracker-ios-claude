@@ -332,12 +332,12 @@ const TrackingPage = () => {
                         {expandedExercises.has(te.id) && (
                           <>
                             {/* Geplante Sätze */}
-                            {te.plannedSets.map((ps) => 
+                            {te.plannedSets.map((ps: any) => 
                               renderSet(te.id, ps.id, ps.set_number, ps.planned_reps, ps.planned_weight, ps.planned_unit, false)
                             )}
                             
                             {/* Extra Sätze */}
-                            {(extraSets[te.id] || []).map((extraSet) => 
+                            {(extraSets[te.id] || []).map((extraSet: ExtraSetData) => 
                               renderSet(te.id, extraSet.id, extraSet.setNumber, null, null, 'kg', true)
                             )}
                           </>
