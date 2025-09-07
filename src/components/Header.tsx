@@ -40,8 +40,8 @@ const Header = () => {
       }}
     >
       <div className="flex items-center px-4 py-3">
-        <Icon className="text-red-500 mr-3" size={28} />
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{title}</h1>
+        <Icon className="text-red-500 mr-3" size={24} />
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h1>
       </div>
     </header>
   );

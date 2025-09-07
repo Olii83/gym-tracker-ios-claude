@@ -287,20 +287,20 @@ const TrackingPage = () => {
       <div key={setKey} className="space-y-2">
         <div className="flex justify-between items-center text-white">
           <div className={isCompleted ? 'line-through text-gray-500' : ''}>
-            <div className="text-sm">
+            <div className="text-xs">
               <span className="font-medium">Satz {setNumber}:</span>
               {!isExtra && (plannedReps || plannedWeight) && (
-                <span className="text-gray-400 ml-2">
+                <span className="text-gray-400 ml-1">
                   Geplant: {plannedReps || '?'} Wdh. × {plannedWeight || '?'} {plannedUnit || 'kg'}
                 </span>
               )}
               {lastReps && lastWeight && (
-                <span className="text-blue-400 ml-2">
+                <span className="text-blue-400 ml-1">
                   {isExtra ? 'Letztes Mal: ' : ' | Letztes Mal: '}{lastReps} Wdh. × {lastWeight} kg
                 </span>
               )}
               {isExtra && !lastReps && !lastWeight && (
-                <span className="text-gray-400 ml-2">(Extra)</span>
+                <span className="text-gray-400 ml-1">(Extra)</span>
               )}
             </div>
           </div>
@@ -443,19 +443,19 @@ const TrackingPage = () => {
                         <div className="flex justify-between items-center">
                           <div className="flex items-center space-x-3 flex-1">
                             <div {...provided.dragHandleProps} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-grab active:cursor-grabbing">
-                              <GripVertical size={20} />
+                              <GripVertical size={18} />
                             </div>
                             <button 
                               onClick={() => toggleExerciseExpansion(te.id)}
                               className="flex items-center space-x-2 flex-1 text-left hover:bg-gray-800 rounded p-1 -m-1 transition-colors"
                             >
                               {expandedExercises.has(te.id) ? (
-                                <ChevronDown size={20} className="text-gray-500 dark:text-gray-400" />
+                                <ChevronDown size={18} className="text-gray-500 dark:text-gray-400" />
                               ) : (
-                                <ChevronRight size={20} className="text-gray-500 dark:text-gray-400" />
+                                <ChevronRight size={18} className="text-gray-500 dark:text-gray-400" />
                               )}
-                              <h2 className={`font-bold text-lg ${text}`}>{te.exercise_name}</h2>
-                              <span className="text-gray-600 dark:text-gray-400 text-sm ml-auto">
+                              <h2 className={`font-medium text-base ${text}`}>{te.exercise_name}</h2>
+                              <span className="text-gray-600 dark:text-gray-400 text-xs ml-auto">
                                 {te.planned_sets + (extraSets[te.id]?.length || 0)} Sätze
                               </span>
                             </button>
@@ -466,14 +466,14 @@ const TrackingPage = () => {
                               className="text-blue-400 hover:text-blue-300 p-1"
                               title="Übung bearbeiten"
                             >
-                              <Edit size={18} />
+                              <Edit size={16} />
                             </button>
                             <button
                               onClick={() => handleDeleteTrainingExercise(te.id, te.exercise_name)}
                               className="text-red-400 hover:text-red-300 p-1"
                               title="Übung aus Training entfernen"
                             >
-                              <Trash2 size={18} />
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </div>

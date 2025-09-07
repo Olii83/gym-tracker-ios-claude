@@ -203,8 +203,6 @@ const TrainingDetail = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{training.name}</h1>
-
       <Button onClick={() => setIsAddExerciseModalOpen(true)} variant="secondary">
         <div className="flex items-center justify-center space-x-2">
           <PlusCircle size={18} />
@@ -241,19 +239,19 @@ const TrainingDetail = () => {
                                 className="flex items-center space-x-2 flex-1 text-left hover:bg-gray-200 dark:hover:bg-gray-800 rounded p-1 -m-1 transition-colors"
                               >
                                 {expandedExercises.has(te.id) ? (
-                                  <ChevronDown size={20} className="text-gray-500 dark:text-gray-400" />
+                                  <ChevronDown size={18} className="text-gray-500 dark:text-gray-400" />
                                 ) : (
-                                  <ChevronRight size={20} className="text-gray-500 dark:text-gray-400" />
+                                  <ChevronRight size={18} className="text-gray-500 dark:text-gray-400" />
                                 )}
-                                <h2 className={`font-bold text-lg ${text}`}>{te.exercise_name}</h2>
-                                <span className="text-gray-600 dark:text-gray-400 text-sm ml-auto">
+                                <h2 className={`font-medium text-base ${text}`}>{te.exercise_name}</h2>
+                                <span className="text-gray-600 dark:text-gray-400 text-xs ml-auto">
                                   {te.planned_sets} Sätze
                                 </span>
                               </button>
                             </div>
                             <div className="flex space-x-2 ml-2">
-                              <button onClick={() => handleEditTrainingExercise(te)} className="text-gray-600 dark:text-gray-400 hover:text-blue-500" title="Übung bearbeiten"><Edit size={18} /></button>
-                              <button onClick={() => handleDeleteTrainingExercise(te.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500" title="Übung löschen"><Trash2 size={18} /></button>
+                              <button onClick={() => handleEditTrainingExercise(te)} className="text-gray-600 dark:text-gray-400 hover:text-blue-500 p-1" title="Übung bearbeiten"><Edit size={16} /></button>
+                              <button onClick={() => handleDeleteTrainingExercise(te.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500 p-1" title="Übung löschen"><Trash2 size={16} /></button>
                             </div>
                           </div>
                           

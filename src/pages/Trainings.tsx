@@ -35,15 +35,17 @@ const Trainings = () => {
           </div>
         ) : (
           trainings.map((training: Training) => (
-            <div key={training.id} className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 flex justify-between items-center">
-              <Link to={`/trainings/${training.id}`} className="font-bold text-lg text-gray-900 dark:text-white hover:text-red-500">
+            <div key={training.id} className="bg-gray-100 dark:bg-gray-900 rounded-lg p-3 flex justify-between items-center">
+              <Link to={`/trainings/${training.id}`} className="font-medium text-base text-gray-900 dark:text-white hover:text-red-500">
                 {training.name}
               </Link>
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 items-center">
                 <Link to={`/track/${training.id}`}>
-                  <Button variant="secondary" className="px-3 py-1 text-sm">Training starten</Button>
+                  <Button variant="secondary" className="px-2 py-1 text-xs">Start</Button>
                 </Link>
-                <button onClick={() => handleDeleteTraining(training.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500"><Trash2 size={18} /></button>
+                <button onClick={() => handleDeleteTraining(training.id)} className="text-gray-600 dark:text-gray-400 hover:text-red-500 p-1">
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
           ))
