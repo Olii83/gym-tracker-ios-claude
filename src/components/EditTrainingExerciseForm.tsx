@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import Button from './Button';
 import type { TrainingExercise } from '../interfaces';
@@ -29,12 +29,13 @@ const EditTrainingExerciseForm = ({ trainingExercise, onClose }: EditTrainingExe
 
     try {
       // Update the training exercise with new planned sets count (only send database fields)
-      const updatedTrainingExercise = {
+      const updatedTrainingExercise: TrainingExercise = {
         id: trainingExercise.id,
         training_id: trainingExercise.training_id,
         exercise_id: trainingExercise.exercise_id,
         planned_sets: validPlannedSetsCount,
-        order: trainingExercise.order
+        order: trainingExercise.order,
+        created_at: trainingExercise.created_at
       };
 
       const { error: updateError } = await updateTrainingExercise(updatedTrainingExercise);
@@ -108,9 +109,9 @@ const EditTrainingExerciseForm = ({ trainingExercise, onClose }: EditTrainingExe
           }}
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          {plannedSetsCount > trainingExercise.planned_sets ? 
+          {typeof plannedSetsCount === 'number' && plannedSetsCount > trainingExercise.planned_sets ? 
             `${plannedSetsCount - trainingExercise.planned_sets} neue Sätze werden hinzugefügt.` :
-            plannedSetsCount < trainingExercise.planned_sets ?
+            typeof plannedSetsCount === 'number' && plannedSetsCount < trainingExercise.planned_sets ?
             `${trainingExercise.planned_sets - plannedSetsCount} Sätze werden entfernt. (Bereits geplante Sätze bleiben erhalten)` :
             'Keine Änderung der Satz-Anzahl.'
           }
