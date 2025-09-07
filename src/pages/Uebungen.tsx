@@ -153,7 +153,9 @@ const Uebungen = () => {
       ) : (
         <div className="space-y-6">
           {filteredMuscleGroups.map((group) => {
-            const groupExercises = filteredExercises.filter(ex => ex.muscle_group === group);
+            const groupExercises = filteredExercises
+              .filter(ex => ex.muscle_group === group)
+              .sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
             if (groupExercises.length === 0) return null;
             
             return (
