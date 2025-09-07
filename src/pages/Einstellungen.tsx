@@ -22,7 +22,6 @@ const Einstellungen = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Einstellungen</h1>
 
       <div className="space-y-4">
         <h2 className={`text-xl font-semibold mb-3 ${getAccentClasses().text}`}>Profil</h2>

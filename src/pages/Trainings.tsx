@@ -25,10 +25,6 @@ const Trainings = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Trainings</h1>
-      </div>
-
       <Button onClick={() => setIsAddModalOpen(true)}>Neues Training erstellen</Button>
 
       <div className="space-y-4">

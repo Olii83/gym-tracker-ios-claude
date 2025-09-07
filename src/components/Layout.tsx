@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { ListTodo, Dumbbell, BarChart2, Settings, ScrollText } from 'lucide-react';
+import Header from './Header';
 
 const navItems = [
   { path: '/', label: 'Trainings', icon: ListTodo },
@@ -11,12 +12,17 @@ const navItems = [
 
 const Layout = () => {
   return (
-    <div className="bg-white dark:bg-black text-gray-900 dark:text-white min-h-screen font-sans" style={{
-      paddingTop: 'var(--safe-area-inset-top)',
-      paddingLeft: 'var(--safe-area-inset-left)',
-      paddingRight: 'var(--safe-area-inset-right)',
-    }}>
-      <main className="pb-20" style={{ paddingBottom: `calc(5rem + var(--safe-area-inset-bottom))` }}>
+    <div className="bg-white dark:bg-black text-gray-900 dark:text-white min-h-screen font-sans">
+      <Header />
+      <main 
+        className="pb-20" 
+        style={{ 
+          paddingTop: `calc(4rem + var(--safe-area-inset-top))`, // Header height + safe area
+          paddingBottom: `calc(5rem + var(--safe-area-inset-bottom))`,
+          paddingLeft: 'var(--safe-area-inset-left)',
+          paddingRight: 'var(--safe-area-inset-right)',
+        }}
+      >
         <Outlet />
       </main>
       <nav className="fixed bottom-0 left-0 right-0 bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex justify-around" style={{

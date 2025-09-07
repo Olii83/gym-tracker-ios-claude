@@ -141,11 +141,7 @@ const Logs = () => {
 
   return (
     <div className="p-4 space-y-4">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <ScrollText className={text} size={28} />
-          <h1 className="text-2xl font-bold text-white">Training Logs</h1>
-        </div>
+      <div className="flex items-center justify-end mb-6">
         <div className="flex items-center space-x-2">
           {!deleteMode ? (
             <button

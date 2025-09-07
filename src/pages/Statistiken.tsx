@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { useAccentColor } from '../hooks/useAccentColor';
 import { Line } from 'react-chartjs-2';
-import { Filter, TrendingUp } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -134,10 +134,6 @@ const Statistiken = () => {
 
   return (
     <div className="p-4 space-y-6">
-      <div className="flex items-center space-x-3">
-        <TrendingUp className={text} size={28} />
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Statistiken</h1>
-      </div>
       
       {/* Filter Section */}
       <div className="space-y-4">
