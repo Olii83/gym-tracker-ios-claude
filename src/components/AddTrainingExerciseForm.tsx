@@ -14,7 +14,7 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
   const [selectedEquipment, setSelectedEquipment] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedExerciseId, setSelectedExerciseId] = useState('');
-  const [plannedSetsCount, setPlannedSetsCount] = useState(3);
+  const [plannedSetsCount, setPlannedSetsCount] = useState<number | ''>( 3);
   const [loading, setLoading] = useState(false);
 
   // Get unique muscle groups
@@ -73,8 +73,11 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
 
     setLoading(true);
     
+    // Ensure we have a valid plannedSetsCount
+    const validPlannedSetsCount = plannedSetsCount === '' ? 1 : plannedSetsCount;
+    
     // Create empty planned sets (details will be added later in TrainingDetail)
-    const emptyPlannedSets = Array.from({ length: plannedSetsCount }, (_, index) => ({
+    const emptyPlannedSets = Array.from({ length: validPlannedSetsCount }, (_, index) => ({
       training_exercise_id: 0, // Will be set by the backend
       set_number: index + 1,
       planned_reps: null,
@@ -86,7 +89,7 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
       {
         training_id: trainingId,
         exercise_id: parseInt(selectedExerciseId),
-        planned_sets: plannedSetsCount,
+        planned_sets: validPlannedSetsCount,
         order: order,
       },
       emptyPlannedSets
@@ -202,10 +205,12 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
           onChange={(e) => {
             const value = e.target.value;
             if (value === '') {
-              setPlannedSetsCount(1);
+              setPlannedSetsCount('');
             } else {
               const numValue = parseInt(value);
-              setPlannedSetsCount(!isNaN(numValue) && numValue >= 1 ? numValue : 1);
+              if (!isNaN(numValue) && numValue >= 1 && numValue <= 10) {
+                setPlannedSetsCount(numValue);
+              }
             }
           }}
         />
