@@ -1,11 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useAccentColor } from '../hooks/useAccentColor';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AddTrainingExerciseForm from '../components/AddTrainingExerciseForm';
-import { Check, Plus, PlusCircle } from 'lucide-react';
+import { Check, Plus, PlusCircle, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import type { WorkoutLog } from '../interfaces';
 
 interface CompletedSet {
@@ -24,7 +25,7 @@ interface ExtraSetData {
 
 const TrackingPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { trainings, trainingExercises, exercises, trainingPlannedSets, addLog } = useData();
+  const { trainings, trainingExercises, exercises, trainingPlannedSets, addLog, updateTrainingExercise } = useData();
   const { text } = useAccentColor();
   const navigate = useNavigate();
 
@@ -33,6 +34,8 @@ const TrackingPage = () => {
   const [completedSets, setCompletedSets] = useState<Record<string, CompletedSet>>({});
   const [extraSets, setExtraSets] = useState<Record<number, ExtraSetData[]>>({});
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false);
+  const [expandedExercises, setExpandedExercises] = useState<Set<number>>(new Set());
+  const [localExerciseOrder, setLocalExerciseOrder] = useState<any[]>([]);
 
   // Early returns after all hooks
   const training = trainings.find(t => t.id === parseInt(id || ''));
@@ -40,16 +43,35 @@ const TrackingPage = () => {
     return <div className="p-4 text-white">Training not found.</div>;
   }
 
-  const exercisesInTraining = trainingExercises
-    .filter(te => te.training_id === training.id)
-    .map(te => ({
-      ...te,
-      exercise_name: exercises.find(ex => ex.id === te.exercise_id)?.name || 'Unknown Exercise',
-      plannedSets: trainingPlannedSets
-        .filter(tps => tps.training_exercise_id === te.id)
-        .sort((a, b) => a.set_number - b.set_number),
-    }))
-    .sort((a, b) => a.order - b.order);
+  // Initialize exercisesInTraining with proper ordering
+  const exercisesInTraining = useMemo(() => {
+    const baseExercises = trainingExercises.filter(te => te.training_id === training.id)
+      .map(te => ({
+        ...te,
+        exercise_name: exercises.find(ex => ex.id === te.exercise_id)?.name || 'Unbekannte Übung',
+        plannedSets: trainingPlannedSets.filter(tps => tps.training_exercise_id === te.id).sort((a, b) => a.set_number - b.set_number),
+      })).sort((a, b) => a.order - b.order);
+
+    // Use local order if available, otherwise use base exercises
+    if (localExerciseOrder.length > 0 && localExerciseOrder.length === baseExercises.length) {
+      return localExerciseOrder;
+    }
+    return baseExercises;
+  }, [trainingExercises, training.id, exercises, trainingPlannedSets, localExerciseOrder]);
+
+  // Update local order when data changes
+  useEffect(() => {
+    if (training?.id) {
+      const baseExercises = trainingExercises.filter(te => te.training_id === training.id)
+        .map(te => ({
+          ...te,
+          exercise_name: exercises.find(ex => ex.id === te.exercise_id)?.name || 'Unbekannte Übung',
+          plannedSets: trainingPlannedSets.filter(tps => tps.training_exercise_id === te.id).sort((a, b) => a.set_number - b.set_number),
+        })).sort((a, b) => a.order - b.order);
+      
+      setLocalExerciseOrder(baseExercises);
+    }
+  }, [trainingExercises, training?.id, exercises, trainingPlannedSets]);
 
   const getSetKey = (trainingExerciseId: number, setId: number | string, isExtra: boolean = false) => {
     return `${trainingExerciseId}-${setId}-${isExtra ? 'extra' : 'planned'}`;
@@ -198,6 +220,53 @@ const TrackingPage = () => {
     navigate('/');
   };
 
+  const toggleExerciseExpansion = (exerciseId: number) => {
+    const newExpanded = new Set(expandedExercises);
+    if (newExpanded.has(exerciseId)) {
+      newExpanded.delete(exerciseId);
+    } else {
+      newExpanded.add(exerciseId);
+    }
+    setExpandedExercises(newExpanded);
+  };
+
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+
+    const items = Array.from(exercisesInTraining);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    // Update local state immediately for UI responsiveness
+    setLocalExerciseOrder(items);
+
+    // Update each training exercise with new order via DataContext
+    try {
+      for (let index = 0; index < items.length; index++) {
+        const item = items[index];
+        const originalFromContext = trainingExercises.find(te => te.id === item.id);
+        if (originalFromContext) {
+          const updatedItem = {
+            ...originalFromContext,
+            order: index
+          };
+          await updateTrainingExercise(updatedItem);
+        }
+      }
+    } catch (error) {
+      console.error('Fehler beim Neuordnen der Übungen:', error);
+      alert('Fehler beim Neuordnen der Übungen.');
+      // Reset to original order on error
+      const originalOrder = trainingExercises.filter(te => te.training_id === training?.id)
+        .map(te => ({
+          ...te,
+          exercise_name: exercises.find(ex => ex.id === te.exercise_id)?.name || 'Unbekannte Übung',
+          plannedSets: trainingPlannedSets.filter(tps => tps.training_exercise_id === te.id).sort((a, b) => a.set_number - b.set_number),
+        })).sort((a, b) => a.order - b.order);
+      setLocalExerciseOrder(originalOrder);
+    }
+  };
+
   return (
     <div className="p-4 space-y-6">
       <div className="flex justify-between items-center">
@@ -218,31 +287,70 @@ const TrackingPage = () => {
           <p className="text-gray-500 text-sm">Füge Übungen hinzu, um dein Training zu starten.</p>
         </div>
       ) : (
-        exercisesInTraining.map((te) => (
-          <div key={te.id} className="bg-gray-900 rounded-lg p-4 space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className={`font-bold text-lg ${text}`}>{te.exercise_name}</h2>
-              <button
-                onClick={() => addExtraSet(te.id)}
-                className="flex items-center space-x-1 text-blue-500 hover:text-blue-400 text-sm"
-                title="Weiteren Satz hinzufügen"
-              >
-                <Plus size={16} />
-                <span>Satz hinzufügen</span>
-              </button>
-            </div>
-            
-            {/* Geplante Sätze */}
-            {te.plannedSets.map((ps) => 
-              renderSet(te.id, ps.id, ps.set_number, ps.planned_reps, ps.planned_weight, ps.planned_unit, false)
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="exercises">
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                {exercisesInTraining.map((te, index) => (
+                  <Draggable key={te.id} draggableId={te.id.toString()} index={index}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className={`bg-gray-900 rounded-lg p-4 space-y-4 ${snapshot.isDragging ? 'shadow-lg rotate-1' : ''}`}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center space-x-3 flex-1">
+                            <div {...provided.dragHandleProps} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-grab active:cursor-grabbing">
+                              <GripVertical size={20} />
+                            </div>
+                            <button 
+                              onClick={() => toggleExerciseExpansion(te.id)}
+                              className="flex items-center space-x-2 flex-1 text-left hover:bg-gray-800 rounded p-1 -m-1 transition-colors"
+                            >
+                              {expandedExercises.has(te.id) ? (
+                                <ChevronDown size={20} className="text-gray-500 dark:text-gray-400" />
+                              ) : (
+                                <ChevronRight size={20} className="text-gray-500 dark:text-gray-400" />
+                              )}
+                              <h2 className={`font-bold text-lg ${text}`}>{te.exercise_name}</h2>
+                              <span className="text-gray-600 dark:text-gray-400 text-sm ml-auto">
+                                {te.planned_sets} Sätze
+                              </span>
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => addExtraSet(te.id)}
+                            className="flex items-center space-x-1 text-blue-500 hover:text-blue-400 text-sm ml-2"
+                            title="Weiteren Satz hinzufügen"
+                          >
+                            <Plus size={16} />
+                            <span>Satz+</span>
+                          </button>
+                        </div>
+                        
+                        {expandedExercises.has(te.id) && (
+                          <>
+                            {/* Geplante Sätze */}
+                            {te.plannedSets.map((ps) => 
+                              renderSet(te.id, ps.id, ps.set_number, ps.planned_reps, ps.planned_weight, ps.planned_unit, false)
+                            )}
+                            
+                            {/* Extra Sätze */}
+                            {(extraSets[te.id] || []).map((extraSet) => 
+                              renderSet(te.id, extraSet.id, extraSet.setNumber, null, null, 'kg', true)
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
             )}
-            
-            {/* Extra Sätze */}
-            {(extraSets[te.id] || []).map((extraSet) => 
-              renderSet(te.id, extraSet.id, extraSet.setNumber, null, null, 'kg', true)
-            )}
-          </div>
-        ))
+          </Droppable>
+        </DragDropContext>
       )}
 
       <div className="pt-4">
