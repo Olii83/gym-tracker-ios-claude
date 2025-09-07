@@ -28,10 +28,13 @@ const EditTrainingExerciseForm = ({ trainingExercise, onClose }: EditTrainingExe
     setLoading(true);
 
     try {
-      // Update the training exercise with new planned sets count
+      // Update the training exercise with new planned sets count (only send database fields)
       const updatedTrainingExercise = {
-        ...trainingExercise,
-        planned_sets: validPlannedSetsCount
+        id: trainingExercise.id,
+        training_id: trainingExercise.training_id,
+        exercise_id: trainingExercise.exercise_id,
+        planned_sets: validPlannedSetsCount,
+        order: trainingExercise.order
       };
 
       const { error: updateError } = await updateTrainingExercise(updatedTrainingExercise);
