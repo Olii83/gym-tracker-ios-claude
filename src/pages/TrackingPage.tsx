@@ -319,14 +319,6 @@ const TrackingPage = () => {
                               </span>
                             </button>
                           </div>
-                          <button
-                            onClick={() => addExtraSet(te.id)}
-                            className="flex items-center space-x-1 text-blue-500 hover:text-blue-400 text-sm ml-2"
-                            title="Weiteren Satz hinzufügen"
-                          >
-                            <Plus size={16} />
-                            <span>Satz+</span>
-                          </button>
                         </div>
                         
                         {expandedExercises.has(te.id) && (
@@ -340,6 +332,18 @@ const TrackingPage = () => {
                             {(extraSets[te.id] || []).map((extraSet: ExtraSetData) => 
                               renderSet(te.id, extraSet.id, extraSet.setNumber, null, null, 'kg', true)
                             )}
+
+                            {/* Satz hinzufügen Button */}
+                            <div className="pt-2">
+                              <button
+                                onClick={() => addExtraSet(te.id)}
+                                className="w-full flex items-center justify-center space-x-2 py-2 border-2 border-dashed border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white rounded-lg transition-colors"
+                                title="Weiteren Satz hinzufügen"
+                              >
+                                <Plus size={18} />
+                                <span>Satz hinzufügen</span>
+                              </button>
+                            </div>
                           </>
                         )}
                       </div>
