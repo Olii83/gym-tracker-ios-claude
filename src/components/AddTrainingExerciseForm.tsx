@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import Button from './Button';
 import type { TrainingPlannedSet } from '../interfaces';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, Filter, Search } from 'lucide-react';
 
 interface AddTrainingExerciseFormProps {
   trainingId: number;
@@ -12,6 +12,8 @@ interface AddTrainingExerciseFormProps {
 const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFormProps) => {
   const { exercises, trainingExercises, addTrainingExercise } = useData();
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('');
+  const [selectedEquipment, setSelectedEquipment] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedExerciseId, setSelectedExerciseId] = useState('');
   const [plannedSets, setPlannedSets] = useState<Omit<TrainingPlannedSet, 'id' | 'created_at' | 'training_exercise_id'>[]>(
     [{ set_number: 1, planned_reps: null, planned_weight: null, planned_unit: 'kg' }]
@@ -24,15 +26,37 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
     return groups;
   }, [exercises]);
 
-  // Filter exercises by selected muscle group
-  const filteredExercises = useMemo(() => {
-    if (!selectedMuscleGroup) return exercises;
-    return exercises.filter(ex => ex.muscle_group === selectedMuscleGroup);
-  }, [exercises, selectedMuscleGroup]);
+  // Get unique equipment types
+  const equipmentTypes = useMemo(() => {
+    const equipment = [...new Set(exercises.map(ex => ex.equipment).filter(Boolean))].sort();
+    return equipment;
+  }, [exercises]);
 
-  // Reset exercise selection when muscle group changes
+  // Filter exercises by selected muscle group, equipment, and search term
+  const filteredExercises = useMemo(() => {
+    return exercises.filter(ex => {
+      const matchesMuscleGroup = !selectedMuscleGroup || ex.muscle_group === selectedMuscleGroup;
+      const matchesEquipment = !selectedEquipment || ex.equipment === selectedEquipment;
+      const matchesSearch = !searchTerm || ex.name.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesMuscleGroup && matchesEquipment && matchesSearch;
+    });
+  }, [exercises, selectedMuscleGroup, selectedEquipment, searchTerm]);
+
+  // Reset exercise selection when filters change
   const handleMuscleGroupChange = (muscleGroup: string) => {
     setSelectedMuscleGroup(muscleGroup);
+    setSelectedExerciseId('');
+  };
+
+  const handleEquipmentChange = (equipment: string) => {
+    setSelectedEquipment(equipment);
+    setSelectedExerciseId('');
+  };
+
+  const clearFilters = () => {
+    setSelectedMuscleGroup('');
+    setSelectedEquipment('');
+    setSearchTerm('');
     setSelectedExerciseId('');
   };
 
@@ -87,23 +111,79 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="muscleGroup" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Körperpartie</label>
-        <select
-          id="muscleGroup"
-          className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-          value={selectedMuscleGroup}
-          onChange={(e) => handleMuscleGroupChange(e.target.value)}
-        >
-          <option value="">Alle Körperpartien</option>
-          {muscleGroups.map(group => (
-            <option key={group} value={group}>{group}</option>
-          ))}
-        </select>
+      {/* Filter Section */}
+      <div className="space-y-4">
+        <div className="flex items-center space-x-2">
+          <Filter size={16} className="text-gray-400" />
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter & Suche:</span>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Übung suchen..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
+          />
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="muscleGroup" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Körperpartie</label>
+            <select
+              id="muscleGroup"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+              value={selectedMuscleGroup}
+              onChange={(e) => handleMuscleGroupChange(e.target.value)}
+            >
+              <option value="">Alle Körperpartien</option>
+              {muscleGroups.map(group => (
+                <option key={group} value={group}>{group}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="equipment" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gerät</label>
+            <select
+              id="equipment"
+              className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+              value={selectedEquipment}
+              onChange={(e) => handleEquipmentChange(e.target.value)}
+            >
+              <option value="">Alle Geräte</option>
+              {equipmentTypes.map(equipment => (
+                <option key={equipment} value={equipment}>{equipment}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Clear Filters Button */}
+        {(selectedMuscleGroup || selectedEquipment || searchTerm) && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="px-3 py-2 bg-gray-300 dark:bg-gray-700 hover:bg-gray-400 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm rounded-lg transition-colors"
+          >
+            Filter zurücksetzen
+          </button>
+        )}
+
+        {/* Show filtered count */}
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          {filteredExercises.length} Übung(en) verfügbar
+          {searchTerm && ` für "${searchTerm}"`}
+          {selectedMuscleGroup && ` in ${selectedMuscleGroup}`}
+          {selectedEquipment && ` mit ${selectedEquipment}`}
+        </p>
       </div>
 
       <div>
-        <label htmlFor="exercise" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Übung</label>
+        <label htmlFor="exercise" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Übung auswählen</label>
         <select
           id="exercise"
           className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
