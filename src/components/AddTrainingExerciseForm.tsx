@@ -38,7 +38,7 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
       const matchesEquipment = !selectedEquipment || ex.equipment === selectedEquipment;
       const matchesSearch = !searchTerm || ex.name.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesMuscleGroup && matchesEquipment && matchesSearch;
-    });
+    }).sort((a, b) => a.name.localeCompare(b.name, 'de', { sensitivity: 'base' }));
   }, [exercises, selectedMuscleGroup, selectedEquipment, searchTerm]);
 
   // Reset exercise selection when filters change
