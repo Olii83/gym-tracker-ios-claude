@@ -227,23 +227,23 @@ const Logs = () => {
             const uniqueExercises = [...new Set(logsForDate.map(log => log.exercise_id))];
             
             return (
-              <div key={date} className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4">
+              <div key={date} className="bg-gray-100 dark:bg-gray-900 rounded-lg p-3">
                 {/* Date Header */}
-                <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-gray-800">
+                <div className="flex items-center space-x-2 mb-3 pb-2 border-b border-gray-800">
                   <button
                     onClick={() => toggleDateExpansion(date)}
                     className="flex items-center space-x-2 flex-1 text-left hover:bg-gray-200 dark:hover:bg-gray-800 rounded p-1 -m-1 transition-colors"
                   >
                     {expandedDates.has(date) ? (
-                      <ChevronDown size={20} className="text-gray-400" />
+                      <ChevronDown size={18} className="text-gray-400" />
                     ) : (
-                      <ChevronRight size={20} className="text-gray-400" />
+                      <ChevronRight size={18} className="text-gray-400" />
                     )}
-                    <Calendar size={20} className={text} />
-                    <h2 className="text-lg font-semibold text-white">
+                    <Calendar size={18} className={text} />
+                    <h2 className="text-base font-medium text-white">
                       {formatDate(date)}
                     </h2>
-                    <span className="text-gray-400 text-sm ml-auto">
+                    <span className="text-gray-400 text-xs ml-auto">
                       {logsForDate.length} Einträge
                     </span>
                   </button>
@@ -252,21 +252,21 @@ const Logs = () => {
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => selectAllLogsForDate(date)}
-                          className="text-sm text-gray-400 hover:text-white transition-colors"
+                          className="text-xs text-gray-400 hover:text-white transition-colors"
                         >
                           {logsForDate.every(log => selectedLogs.has(log.id)) ? 'Alle abwählen' : 'Alle auswählen'}
                         </button>
                         <button
                           onClick={() => handleDeleteWorkoutSession(date)}
-                          className={`flex items-center space-x-1 px-2 py-1 ${primary} ${hover} text-white text-xs rounded transition-colors`}
+                          className={`flex items-center space-x-1 px-1 py-0.5 ${primary} ${hover} text-white text-xs rounded transition-colors`}
                         >
-                          <Trash2 size={12} />
-                          <span>Training löschen</span>
+                          <Trash2 size={10} />
+                          <span>Löschen</span>
                         </button>
                       </div>
                     )}
-                    <div className="flex items-center space-x-1 text-gray-400 text-sm">
-                      <Clock size={16} />
+                    <div className="flex items-center space-x-1 text-gray-400 text-xs">
+                      <Clock size={14} />
                       <span>{formatTime(logsForDate[0].created_at)}</span>
                     </div>
                   </div>
@@ -274,7 +274,7 @@ const Logs = () => {
 
                 {/* Exercise Summary */}
                 {expandedDates.has(date) && (
-                  <div className="grid gap-3">
+                  <div className="grid gap-2">
                   {uniqueExercises.map(exerciseId => {
                     const exerciseLogs = logsForDate.filter((log: WorkoutLog) => log.exercise_id === exerciseId);
                     const totalSets = exerciseLogs.length;
@@ -282,30 +282,30 @@ const Logs = () => {
                     const maxWeight = Math.max(...exerciseLogs.map((log: WorkoutLog) => log.weight));
 
                     return (
-                      <div key={exerciseId} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-2">
+                      <div key={exerciseId} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2">
+                        <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center space-x-2">
-                            <Dumbbell size={16} className={text} />
-                            <h3 className="font-medium text-white">
+                            <Dumbbell size={14} className={text} />
+                            <h3 className="font-medium text-white text-sm">
                               {getExerciseName(exerciseId)}
                             </h3>
                           </div>
-                          <div className="text-sm text-gray-400">
+                          <div className="text-xs text-gray-400">
                             {totalSets} Satz{totalSets !== 1 ? 'e' : ''}
                           </div>
                         </div>
                         
-                        <div className="flex justify-between text-sm text-gray-300">
-                          <span>Gesamt Wiederholungen: <strong>{totalReps}</strong></span>
-                          <span>Max Gewicht: <strong>{maxWeight}kg</strong></span>
+                        <div className="flex justify-between text-xs text-gray-300">
+                          <span>Gesamt: <strong>{totalReps}</strong> Wdh.</span>
+                          <span>Max: <strong>{maxWeight}kg</strong></span>
                         </div>
 
                         {/* Individual Sets */}
-                        <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div className="mt-1 grid grid-cols-2 sm:grid-cols-4 gap-1">
                           {exerciseLogs.map((log: WorkoutLog, index: number) => (
                             <div 
                               key={log.id} 
-                              className={`rounded px-2 py-1 text-xs relative ${
+                              className={`rounded px-1 py-0.5 text-xs relative ${
                                 deleteMode 
                                   ? 'cursor-pointer border-2 transition-all ' + 
                                     (selectedLogs.has(log.id) 
@@ -316,13 +316,13 @@ const Logs = () => {
                               onClick={deleteMode ? () => toggleLogSelection(log.id) : undefined}
                             >
                               {deleteMode && selectedLogs.has(log.id) && (
-                                <div className={`absolute -top-1 -right-1 w-4 h-4 ${primary} rounded-full flex items-center justify-center`}>
+                                <div className={`absolute -top-1 -right-1 w-3 h-3 ${primary} rounded-full flex items-center justify-center`}>
                                   <span className="text-white text-xs">✓</span>
                                 </div>
                               )}
-                              <span className="text-gray-400">Satz {index + 1}:</span>
-                              <span className="text-white ml-1">
-                                {log.reps} × {log.weight}kg
+                              <span className="text-gray-400 text-xs">{index + 1}:</span>
+                              <span className="text-white text-xs ml-0.5">
+                                {log.reps}×{log.weight}
                               </span>
                             </div>
                           ))}
