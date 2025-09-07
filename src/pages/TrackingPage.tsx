@@ -26,7 +26,7 @@ interface ExtraSetData {
 
 const TrackingPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { trainings, trainingExercises, exercises, trainingPlannedSets, addLog, updateTrainingExercise, deleteTrainingExercise } = useData();
+  const { trainings, trainingExercises, exercises, trainingPlannedSets, logs, addLog, updateTrainingExercise, deleteTrainingExercise } = useData();
   const { text } = useAccentColor();
   const navigate = useNavigate();
 
@@ -215,8 +215,27 @@ const TrackingPage = () => {
     setIsEditTrainingExerciseModalOpen(true);
   };
 
+  // Get the last tracked values for a specific exercise
+  const getLastTrackedValues = (exerciseId: number) => {
+    // Find all logs for this exercise, sorted by date (most recent first)
+    const exerciseLogs = logs
+      .filter(log => log.exercise_id === exerciseId)
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    if (exerciseLogs.length === 0) {
+      return { lastReps: null, lastWeight: null };
+    }
+
+    // Use the most recent log for this exercise
+    return {
+      lastReps: exerciseLogs[0].reps,
+      lastWeight: exerciseLogs[0].weight
+    };
+  };
+
   const renderSet = (
     trainingExerciseId: number,
+    exerciseId: number,
     setId: number | string,
     setNumber: number,
     plannedReps: number | null,
@@ -228,6 +247,11 @@ const TrackingPage = () => {
     const isCompleted = completedSets[setKey]?.completed || false;
     const completedData = completedSets[setKey];
     const inputId = `${setKey}`;
+
+    // Get last tracked values for this exercise, fallback to planned values
+    const { lastReps, lastWeight } = getLastTrackedValues(exerciseId);
+    const defaultReps = lastReps || plannedReps || '';
+    const defaultWeight = lastWeight || plannedWeight || '';
 
     return (
       <div key={setKey} className="space-y-2">
@@ -258,7 +282,7 @@ const TrackingPage = () => {
             type="number"
             inputMode="numeric"
             placeholder="Wiederholungen"
-            defaultValue={plannedReps || ''}
+            defaultValue={defaultReps}
             disabled={isCompleted}
             className={`w-1/3 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
             id={`reps-${inputId}`}
@@ -268,7 +292,7 @@ const TrackingPage = () => {
             inputMode="decimal"
             step="0.25"
             placeholder="Gewicht"
-            defaultValue={plannedWeight || ''}
+            defaultValue={defaultWeight}
             disabled={isCompleted}
             className={`w-1/3 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
             id={`weight-${inputId}`}
@@ -416,12 +440,12 @@ const TrackingPage = () => {
                           <>
                             {/* Geplante Sätze */}
                             {te.plannedSets.map((ps: any) => 
-                              renderSet(te.id, ps.id, ps.set_number, ps.planned_reps, ps.planned_weight, ps.planned_unit, false)
+                              renderSet(te.id, te.exercise_id, ps.id, ps.set_number, ps.planned_reps, ps.planned_weight, ps.planned_unit, false)
                             )}
                             
                             {/* Extra Sätze */}
                             {(extraSets[te.id] || []).map((extraSet: ExtraSetData) => 
-                              renderSet(te.id, extraSet.id, extraSet.setNumber, null, null, 'kg', true)
+                              renderSet(te.id, te.exercise_id, extraSet.id, extraSet.setNumber, null, null, 'kg', true)
                             )}
 
                             {/* Satz hinzufügen Button */}
