@@ -199,7 +199,15 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
           max="10"
           className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
           value={plannedSetsCount}
-          onChange={(e) => setPlannedSetsCount(parseInt(e.target.value) || 1)}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value === '') {
+              setPlannedSetsCount(1);
+            } else {
+              const numValue = parseInt(value);
+              setPlannedSetsCount(!isNaN(numValue) && numValue >= 1 ? numValue : 1);
+            }
+          }}
         />
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           Die Details für jeden Satz können nach dem Hinzufügen bearbeitet werden.

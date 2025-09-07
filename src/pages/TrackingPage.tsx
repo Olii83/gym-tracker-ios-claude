@@ -5,7 +5,7 @@ import { useAccentColor } from '../hooks/useAccentColor';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AddTrainingExerciseForm from '../components/AddTrainingExerciseForm';
-import { Check, Plus, PlusCircle, GripVertical, ChevronDown, ChevronRight } from 'lucide-react';
+import { Check, Plus, PlusCircle, GripVertical, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
 import type { WorkoutLog } from '../interfaces';
 
@@ -25,7 +25,7 @@ interface ExtraSetData {
 
 const TrackingPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { trainings, trainingExercises, exercises, trainingPlannedSets, addLog, updateTrainingExercise } = useData();
+  const { trainings, trainingExercises, exercises, trainingPlannedSets, addLog, updateTrainingExercise, deleteTrainingExercise } = useData();
   const { text } = useAccentColor();
   const navigate = useNavigate();
 
@@ -155,6 +155,58 @@ const TrackingPage = () => {
     });
   }, [exercisesInTraining]);
 
+  const removeExtraSet = useCallback((trainingExerciseId: number, setId: string) => {
+    if (!window.confirm('Möchtest du diesen Extra-Satz wirklich löschen?')) {
+      return;
+    }
+    
+    setExtraSets(prev => {
+      const currentSets = prev[trainingExerciseId] || [];
+      const updatedSets = currentSets.filter(set => set.id !== setId);
+      
+      // Renumber the remaining sets
+      const plannedSetsCount = exercisesInTraining.find(te => te.id === trainingExerciseId)?.plannedSets.length || 0;
+      const renumberedSets = updatedSets.map((set, index) => ({
+        ...set,
+        setNumber: plannedSetsCount + index + 1
+      }));
+      
+      return {
+        ...prev,
+        [trainingExerciseId]: renumberedSets
+      };
+    });
+    
+    // Remove from completed sets if it was completed
+    setCompletedSets(prev => {
+      const setKey = getSetKey(trainingExerciseId, setId, true);
+      const newCompleted = { ...prev };
+      delete newCompleted[setKey];
+      return newCompleted;
+    });
+  }, [exercisesInTraining]);
+
+  const handleDeleteTrainingExercise = async (trainingExerciseId: number, exerciseName: string) => {
+    if (window.confirm(`Möchtest du die Übung "${exerciseName}" wirklich aus dem Training entfernen?`)) {
+      await deleteTrainingExercise(trainingExerciseId);
+      // Clean up any extra sets and completed sets for this exercise
+      setExtraSets(prev => {
+        const newSets = { ...prev };
+        delete newSets[trainingExerciseId];
+        return newSets;
+      });
+      setCompletedSets(prev => {
+        const newCompleted = { ...prev };
+        Object.keys(newCompleted).forEach(key => {
+          if (key.startsWith(`${trainingExerciseId}-`)) {
+            delete newCompleted[key];
+          }
+        });
+        return newCompleted;
+      });
+    }
+  };
+
   const renderSet = (
     trainingExerciseId: number,
     setId: number | string,
@@ -176,15 +228,27 @@ const TrackingPage = () => {
             Satz {setNumber}: {plannedReps || '?'} Wdh. × {plannedWeight || '?'} {plannedUnit || 'kg'} 
             {isExtra ? ' (Extra)' : ' (Geplant)'}
           </span>
-          {isCompleted && completedData && (
-            <span className="text-green-500 text-sm">
-              ✓ {completedData.reps} Wdh. × {completedData.weight} kg
-            </span>
-          )}
+          <div className="flex items-center space-x-2">
+            {isCompleted && completedData && (
+              <span className="text-green-500 text-sm">
+                ✓ {completedData.reps} Wdh. × {completedData.weight} kg
+              </span>
+            )}
+            {isExtra && (
+              <button
+                onClick={() => removeExtraSet(trainingExerciseId, setId as string)}
+                className="text-red-400 hover:text-red-300 p-1"
+                title="Extra-Satz löschen"
+              >
+                <Trash2 size={16} />
+              </button>
+            )}
+          </div>
         </div>
         <div className="flex space-x-2">
           <input
             type="number"
+            inputMode="numeric"
             placeholder="Wiederholungen"
             defaultValue={plannedReps || ''}
             disabled={isCompleted}
@@ -193,6 +257,7 @@ const TrackingPage = () => {
           />
           <input
             type="number"
+            inputMode="decimal"
             step="0.25"
             placeholder="Gewicht"
             defaultValue={plannedWeight || ''}
@@ -217,7 +282,9 @@ const TrackingPage = () => {
   };
 
   const handleFinishTraining = () => {
-    navigate('/');
+    if (window.confirm('Möchtest du das Training wirklich beenden? Alle eingetragenen Sätze wurden bereits gespeichert.')) {
+      navigate('/');
+    }
   };
 
   const toggleExerciseExpansion = (exerciseId: number) => {
@@ -315,10 +382,17 @@ const TrackingPage = () => {
                               )}
                               <h2 className={`font-bold text-lg ${text}`}>{te.exercise_name}</h2>
                               <span className="text-gray-600 dark:text-gray-400 text-sm ml-auto">
-                                {te.planned_sets} Sätze
+                                {te.planned_sets + (extraSets[te.id]?.length || 0)} Sätze
                               </span>
                             </button>
                           </div>
+                          <button
+                            onClick={() => handleDeleteTrainingExercise(te.id, te.exercise_name)}
+                            className="text-red-400 hover:text-red-300 p-1"
+                            title="Übung aus Training entfernen"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                         </div>
                         
                         {expandedExercises.has(te.id) && (
@@ -358,7 +432,7 @@ const TrackingPage = () => {
       )}
 
       <div className="pt-4">
-        <Button onClick={handleFinishTraining}>Fertig</Button>
+        <Button onClick={handleFinishTraining}>Training beenden</Button>
       </div>
 
       {/* Modal für Übung hinzufügen */}

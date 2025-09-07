@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { useAccentColor } from '../hooks/useAccentColor';
-import { ScrollText, Calendar, Clock, Dumbbell, Trash2 } from 'lucide-react';
+import { ScrollText, Calendar, Clock, Dumbbell, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import type { WorkoutLog } from '../interfaces';
 
 const Logs = () => {
@@ -10,6 +10,7 @@ const Logs = () => {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'week' | 'month'>('all');
   const [deleteMode, setDeleteMode] = useState(false);
   const [selectedLogs, setSelectedLogs] = useState<Set<number>>(new Set());
+  const [expandedDates, setExpandedDates] = useState<Set<string>>(new Set());
 
   // Group logs by date and training session
   const groupedLogs = logs.reduce((acc: Record<string, WorkoutLog[]>, log: WorkoutLog) => {
@@ -128,6 +129,16 @@ const Logs = () => {
     setSelectedLogs(newSelection);
   };
 
+  const toggleDateExpansion = (date: string) => {
+    const newExpanded = new Set(expandedDates);
+    if (newExpanded.has(date)) {
+      newExpanded.delete(date);
+    } else {
+      newExpanded.add(date);
+    }
+    setExpandedDates(newExpanded);
+  };
+
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between mb-6">
@@ -223,11 +234,24 @@ const Logs = () => {
               <div key={date} className="bg-gray-100 dark:bg-gray-900 rounded-lg p-4">
                 {/* Date Header */}
                 <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-gray-800">
-                  <Calendar size={20} className={text} />
-                  <h2 className="text-lg font-semibold text-white">
-                    {formatDate(date)}
-                  </h2>
-                  <div className="flex items-center space-x-2 ml-auto">
+                  <button
+                    onClick={() => toggleDateExpansion(date)}
+                    className="flex items-center space-x-2 flex-1 text-left hover:bg-gray-200 dark:hover:bg-gray-800 rounded p-1 -m-1 transition-colors"
+                  >
+                    {expandedDates.has(date) ? (
+                      <ChevronDown size={20} className="text-gray-400" />
+                    ) : (
+                      <ChevronRight size={20} className="text-gray-400" />
+                    )}
+                    <Calendar size={20} className={text} />
+                    <h2 className="text-lg font-semibold text-white">
+                      {formatDate(date)}
+                    </h2>
+                    <span className="text-gray-400 text-sm ml-auto">
+                      {logsForDate.length} Einträge
+                    </span>
+                  </button>
+                  <div className="flex items-center space-x-2 ml-2">
                     {deleteMode && (
                       <div className="flex items-center space-x-2">
                         <button
@@ -253,7 +277,8 @@ const Logs = () => {
                 </div>
 
                 {/* Exercise Summary */}
-                <div className="grid gap-3">
+                {expandedDates.has(date) && (
+                  <div className="grid gap-3">
                   {uniqueExercises.map(exerciseId => {
                     const exerciseLogs = logsForDate.filter((log: WorkoutLog) => log.exercise_id === exerciseId);
                     const totalSets = exerciseLogs.length;
@@ -309,7 +334,8 @@ const Logs = () => {
                       </div>
                     );
                   })}
-                </div>
+                  </div>
+                )}
               </div>
             );
           })}
