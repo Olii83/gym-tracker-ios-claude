@@ -439,13 +439,13 @@ const TrackingPage = () => {
             )}
           </div>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex space-x-1">
           <input
             type="number"
             inputMode="numeric"
             placeholder="Wdh."
             disabled={isCompleted}
-            className={`flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
+            className={`w-16 bg-gray-800 border border-gray-700 rounded px-1 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
             id={`reps-${inputId}`}
           />
           <div className="flex flex-1 space-x-1">
@@ -455,13 +455,13 @@ const TrackingPage = () => {
               step="0.25"
               placeholder="Gewicht"
               disabled={isCompleted}
-              className={`flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
+              className={`flex-1 bg-gray-800 border border-gray-700 rounded px-1 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
               id={`weight-${inputId}`}
             />
             <button
               onClick={() => toggleExerciseWeightUnit(exerciseId)}
               disabled={isCompleted}
-              className={`px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-mono flex-shrink-0 ${isCompleted ? 'opacity-50' : ''}`}
+              className={`px-1 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-mono w-8 ${isCompleted ? 'opacity-50' : ''}`}
               title="Gewichtseinheit umschalten"
             >
               {currentUnit}
@@ -469,22 +469,22 @@ const TrackingPage = () => {
           </div>
           <button
             onClick={() => toggleSetCompletion(trainingExerciseId, setId, setNumber, isExtra)}
-            className={`flex items-center justify-center w-8 h-8 rounded-lg border-2 transition-all flex-shrink-0 ${
+            className={`flex items-center justify-center w-7 h-7 rounded border-2 transition-all flex-shrink-0 ${
               isCompleted 
                 ? 'bg-green-600 border-green-600 text-white' 
                 : 'border-gray-600 text-gray-400 hover:border-green-500 hover:text-green-500'
             }`}
             title={isCompleted ? 'Satz als nicht erledigt markieren' : 'Satz als erledigt markieren'}
           >
-            <Check size={16} />
+            <Check size={14} />
           </button>
           {!isCompleted && (
             <button
               onClick={() => isExtra ? removeExtraSet(trainingExerciseId, setId as string) : deleteSet(trainingExerciseId, setId, setNumber)}
-              className="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all flex-shrink-0"
+              className="flex items-center justify-center w-7 h-7 rounded text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all flex-shrink-0"
               title="Satz löschen"
             >
-              <Trash2 size={14} />
+              <Trash2 size={12} />
             </button>
           )}
         </div>
