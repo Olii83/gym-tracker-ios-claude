@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import { ListTodo, Dumbbell, BarChart2, Settings, ScrollText } from 'lucide-react';
 import Header from './Header';
 import { useTracking } from '../contexts/TrackingContext';
@@ -13,11 +13,9 @@ const navItems = [
 
 const Layout = () => {
   const { isTraining } = useTracking();
-  const location = useLocation();
-  const isOnTrackingPage = location.pathname.startsWith('/track/');
 
   const handleNavClick = (e: React.MouseEvent, path: string) => {
-    if (isTraining && !isOnTrackingPage) {
+    if (isTraining) {
       e.preventDefault();
       if (window.confirm('⚠️ Du bist gerade im Training-Modus.\n\nMöchtest du wirklich das Training verlassen? Verwende stattdessen die Buttons "Training beenden" oder "Abbrechen" auf der Tracking-Seite.')) {
         // User confirmed, allow navigation

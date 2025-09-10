@@ -258,6 +258,41 @@ const TrackingPage = () => {
     });
   }, [exercisesInTraining, completedSets, exerciseWeightUnits]);
 
+  const deleteSet = useCallback((trainingExerciseId: number, setId: number | string, setNumber: number) => {
+    if (!window.confirm(`Möchtest du Satz ${setNumber} wirklich löschen?`)) {
+      return;
+    }
+
+    const setKey = getSetKey(trainingExerciseId, setId, false);
+    const completedSet = completedSets[setKey];
+
+    // Remove from session logs if completed
+    if (completedSet?.completed) {
+      const exerciseId = exercisesInTraining.find(te => te.id === trainingExerciseId)?.exercise_id;
+      if (exerciseId) {
+        const exerciseUnit = getExerciseWeightUnit(exerciseId);
+        setSessionLogs(prev => {
+          const indexToRemove = prev.findIndex(log => 
+            log.exercise_id === exerciseId && 
+            log.reps === completedSet.reps && 
+            log.weight === convertWeight(completedSet.weight, exerciseUnit, 'kg')
+          );
+          if (indexToRemove !== -1) {
+            return prev.filter((_, index) => index !== indexToRemove);
+          }
+          return prev;
+        });
+      }
+    }
+
+    // Remove from completed sets
+    setCompletedSets(prev => {
+      const newCompleted = { ...prev };
+      delete newCompleted[setKey];
+      return newCompleted;
+    });
+  }, [exercisesInTraining, completedSets, exerciseWeightUnits]);
+
   const handleDeleteTrainingExercise = async (trainingExerciseId: number, exerciseName: string) => {
     if (window.confirm(`Möchtest du die Übung "${exerciseName}" wirklich aus dem Training entfernen?`)) {
       // Get exercise ID to remove related session logs
@@ -408,31 +443,50 @@ const TrackingPage = () => {
           <input
             type="number"
             inputMode="numeric"
-            placeholder="Wiederholungen"
+            placeholder="Wdh."
             disabled={isCompleted}
-            className={`w-1/3 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
+            className={`flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
             id={`reps-${inputId}`}
           />
-          <input
-            type="number"
-            inputMode="decimal"
-            step="0.25"
-            placeholder="Gewicht"
-            disabled={isCompleted}
-            className={`w-1/3 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
-            id={`weight-${inputId}`}
-          />
+          <div className="flex flex-1 space-x-1">
+            <input
+              type="number"
+              inputMode="decimal"
+              step="0.25"
+              placeholder="Gewicht"
+              disabled={isCompleted}
+              className={`flex-1 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
+              id={`weight-${inputId}`}
+            />
+            <button
+              onClick={() => toggleExerciseWeightUnit(exerciseId)}
+              disabled={isCompleted}
+              className={`px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-mono flex-shrink-0 ${isCompleted ? 'opacity-50' : ''}`}
+              title="Gewichtseinheit umschalten"
+            >
+              {currentUnit}
+            </button>
+          </div>
           <button
             onClick={() => toggleSetCompletion(trainingExerciseId, setId, setNumber, isExtra)}
-            className={`flex items-center justify-center w-10 h-10 rounded-lg border-2 transition-all ${
+            className={`flex items-center justify-center w-8 h-8 rounded-lg border-2 transition-all flex-shrink-0 ${
               isCompleted 
                 ? 'bg-green-600 border-green-600 text-white' 
                 : 'border-gray-600 text-gray-400 hover:border-green-500 hover:text-green-500'
             }`}
             title={isCompleted ? 'Satz als nicht erledigt markieren' : 'Satz als erledigt markieren'}
           >
-            <Check size={20} />
+            <Check size={16} />
           </button>
+          {!isCompleted && (
+            <button
+              onClick={() => isExtra ? removeExtraSet(trainingExerciseId, setId as string) : deleteSet(trainingExerciseId, setId, setNumber)}
+              className="flex items-center justify-center w-8 h-8 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all flex-shrink-0"
+              title="Satz löschen"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
         </div>
       </div>
     );
@@ -634,8 +688,8 @@ const TrackingPage = () => {
                         className={`bg-gray-900 rounded-lg p-4 space-y-4 ${snapshot.isDragging ? 'shadow-lg rotate-1' : ''}`}
                       >
                         <div className="flex justify-between items-center">
-                          <div className="flex items-center space-x-3 flex-1">
-                            <div {...provided.dragHandleProps} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-grab active:cursor-grabbing">
+                          <div className="flex items-center space-x-2 flex-1 min-w-0">
+                            <div {...provided.dragHandleProps} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-grab active:cursor-grabbing flex-shrink-0">
                               <GripVertical size={18} />
                             </div>
                             <button 
@@ -647,37 +701,29 @@ const TrackingPage = () => {
                               ) : (
                                 <ChevronRight size={18} className="text-gray-500 dark:text-gray-400 flex-shrink-0" />
                               )}
-                              <h2 className={`font-medium text-base ${text} flex-1 truncate`}>{te.exercise_name}</h2>
+                              <h2 className={`font-medium text-sm ${text} flex-1 truncate`}>{te.exercise_name}</h2>
                             </button>
-                            <span className={`text-xs flex-shrink-0 ${
-                              areAllSetsCompleted(te.id) 
-                                ? 'text-green-500 font-medium' 
-                                : 'text-gray-600 dark:text-gray-400'
-                            }`}>
-                              {te.planned_sets + (extraSets[te.id]?.length || 0)} Sätze
-                            </span>
+                            {/* Grüner Haken wenn alle Sätze abgeschlossen */}
+                            {areAllSetsCompleted(te.id) && (
+                              <div className="flex-shrink-0 text-green-500" title="Alle Sätze abgeschlossen">
+                                <Check size={20} />
+                              </div>
+                            )}
                           </div>
-                          <div className="flex space-x-2">
-                            <button
-                              onClick={() => toggleExerciseWeightUnit(te.exercise_id)}
-                              className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-mono"
-                              title="Gewichtseinheit umschalten"
-                            >
-                              {getExerciseWeightUnit(te.exercise_id)}
-                            </button>
+                          <div className="flex items-center space-x-1 flex-shrink-0">
                             <button
                               onClick={() => handleEditTrainingExercise(te)}
                               className="text-blue-400 hover:text-blue-300 p-1"
                               title="Übung bearbeiten"
                             >
-                              <Edit size={16} />
+                              <Edit size={14} />
                             </button>
                             <button
                               onClick={() => handleDeleteTrainingExercise(te.id, te.exercise_name)}
                               className="text-red-400 hover:text-red-300 p-1"
                               title="Übung aus Training entfernen"
                             >
-                              <Trash2 size={16} />
+                              <Trash2 size={14} />
                             </button>
                           </div>
                         </div>
