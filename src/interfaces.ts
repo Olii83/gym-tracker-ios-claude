@@ -11,6 +11,7 @@ export interface Exercise {
   muscle_group: string;
   equipment?: string;
   user_id: string | null;
+  preferred_unit?: 'kg' | 'lb';
 }
 
 export interface WorkoutLog {

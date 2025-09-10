@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../contexts/DataContext';
 import Button from './Button';
-import { Filter, Search } from 'lucide-react';
+import { Filter, Search, Plus } from 'lucide-react';
 
 interface AddTrainingExerciseFormProps {
   trainingId: number;
@@ -9,7 +9,7 @@ interface AddTrainingExerciseFormProps {
 }
 
 const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFormProps) => {
-  const { exercises, trainingExercises, addTrainingExercise } = useData();
+  const { exercises, trainingExercises, addTrainingExercise, addExercise } = useData();
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState('');
   const [selectedEquipment, setSelectedEquipment] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -18,6 +18,13 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
   const [loading, setLoading] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
+  
+  // State for creating new exercise
+  const [showCreateNew, setShowCreateNew] = useState(false);
+  const [newExerciseName, setNewExerciseName] = useState('');
+  const [newExerciseMuscleGroup, setNewExerciseMuscleGroup] = useState('');
+  const [newExerciseEquipment, setNewExerciseEquipment] = useState('');
+  const [newExerciseUnit, setNewExerciseUnit] = useState<'kg' | 'lb'>('kg');
 
   // Get unique muscle groups
   const muscleGroups = useMemo(() => {
@@ -80,6 +87,40 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
     };
   }, []);
 
+
+  const handleCreateNewExercise = async () => {
+    if (!newExerciseName.trim() || !newExerciseMuscleGroup) {
+      alert('Bitte gib einen Übungsnamen und eine Körperpartie an.');
+      return;
+    }
+
+    setLoading(true);
+    
+    const { data, error } = await addExercise({
+      name: newExerciseName.trim(),
+      muscle_group: newExerciseMuscleGroup,
+      equipment: newExerciseEquipment || undefined,
+      preferred_unit: newExerciseUnit,
+    });
+
+    if (error) {
+      alert(`Fehler beim Erstellen der Übung: ${error.message}`);
+      setLoading(false);
+      return;
+    }
+
+    if (data && data[0]) {
+      // Automatically select the new exercise
+      setSelectedExerciseId(data[0].id.toString());
+      setShowCreateNew(false);
+      setNewExerciseName('');
+      setNewExerciseMuscleGroup('');
+      setNewExerciseEquipment('');
+      setNewExerciseUnit('kg');
+    }
+    
+    setLoading(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,19 +286,107 @@ const AddTrainingExerciseForm = ({ trainingId, onClose }: AddTrainingExerciseFor
       </div>
 
       <div>
-        <label htmlFor="exercise" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Übung auswählen</label>
-        <select
-          id="exercise"
-          className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
-          value={selectedExerciseId}
-          onChange={(e) => setSelectedExerciseId(e.target.value)}
-          disabled={filteredExercises.length === 0}
-        >
-          <option value="">Übung auswählen...</option>
-          {filteredExercises.map(ex => (
-            <option key={ex.id} value={ex.id}>{ex.name}</option>
-          ))}
-        </select>
+        <div className="flex justify-between items-center mb-1">
+          <label htmlFor="exercise" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Übung auswählen</label>
+          <button
+            type="button"
+            onClick={() => setShowCreateNew(!showCreateNew)}
+            className="flex items-center space-x-1 px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+          >
+            <Plus size={14} />
+            <span>Neue Übung</span>
+          </button>
+        </div>
+        
+        {!showCreateNew ? (
+          <select
+            id="exercise"
+            className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+            value={selectedExerciseId}
+            onChange={(e) => setSelectedExerciseId(e.target.value)}
+            disabled={filteredExercises.length === 0}
+          >
+            <option value="">Übung auswählen...</option>
+            {filteredExercises.map(ex => (
+              <option key={ex.id} value={ex.id}>{ex.name}</option>
+            ))}
+          </select>
+        ) : (
+          <div className="space-y-3 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">Neue Übung erstellen</h4>
+            
+            <div>
+              <label htmlFor="newExerciseName" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Übungsname*</label>
+              <input
+                type="text"
+                id="newExerciseName"
+                placeholder="z.B. Lat Pulldown schmal"
+                value={newExerciseName}
+                onChange={(e) => setNewExerciseName(e.target.value)}
+                className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="newMuscleGroup" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Körperpartie*</label>
+              <select
+                id="newMuscleGroup"
+                value={newExerciseMuscleGroup}
+                onChange={(e) => setNewExerciseMuscleGroup(e.target.value)}
+                className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+              >
+                <option value="">Körperpartie wählen...</option>
+                {muscleGroups.map(group => (
+                  <option key={group} value={group}>{group}</option>
+                ))}
+                <option value="Sonstiges">Sonstiges</option>
+              </select>
+            </div>
+            
+            <div>
+              <label htmlFor="newEquipment" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Gerät (optional)</label>
+              <input
+                type="text"
+                id="newEquipment"
+                placeholder="z.B. Kabelzug, Langhantel"
+                value={newExerciseEquipment}
+                onChange={(e) => setNewExerciseEquipment(e.target.value)}
+                className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="newUnit" className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Standard-Gewichtseinheit</label>
+              <select
+                id="newUnit"
+                value={newExerciseUnit}
+                onChange={(e) => setNewExerciseUnit(e.target.value as 'kg' | 'lb')}
+                className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-600"
+              >
+                <option value="kg">Kilogramm (kg)</option>
+                <option value="lb">Pfund (lb)</option>
+              </select>
+            </div>
+            
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                onClick={handleCreateNewExercise}
+                disabled={loading || !newExerciseName.trim() || !newExerciseMuscleGroup}
+                className="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white text-sm rounded transition-colors"
+              >
+                {loading ? 'Erstelle...' : 'Erstellen & Auswählen'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreateNew(false)}
+                className="px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm rounded transition-colors"
+              >
+                Abbrechen
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <div>

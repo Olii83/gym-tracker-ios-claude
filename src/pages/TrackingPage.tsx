@@ -2,13 +2,14 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { useAccentColor } from '../hooks/useAccentColor';
+import { useTracking } from '../contexts/TrackingContext';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import AddTrainingExerciseForm from '../components/AddTrainingExerciseForm';
 import EditTrainingExerciseForm from '../components/EditTrainingExerciseForm';
 import { Check, Plus, PlusCircle, GripVertical, ChevronDown, ChevronRight, Trash2, Edit } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd';
-import type { WorkoutLog } from '../interfaces';
+import type { WorkoutLog, TrainingExercise } from '../interfaces';
 
 interface CompletedSet {
   reps: number;
@@ -24,30 +25,50 @@ interface ExtraSetData {
   completed: boolean;
 }
 
+interface ExtendedTrainingExercise extends TrainingExercise {
+  exercise_name: string;
+  plannedSets: any[];
+}
+
 const TrackingPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { trainings, trainingExercises, exercises, trainingPlannedSets, logs, addLog, updateTrainingExercise, deleteTrainingExercise } = useData();
+  const { trainings, trainingExercises, exercises, trainingPlannedSets, logs, addLog, updateTrainingExercise, deleteTrainingExercise, profile } = useData();
   const { text } = useAccentColor();
   const navigate = useNavigate();
+  const { startTraining, stopTraining } = useTracking();
 
   // Always call hooks first
-  const [, setCurrentLogs] = useState<Record<number, WorkoutLog[]>>({});
   const [completedSets, setCompletedSets] = useState<Record<string, CompletedSet>>({});
   const [extraSets, setExtraSets] = useState<Record<number, ExtraSetData[]>>({});
   const [isAddExerciseModalOpen, setIsAddExerciseModalOpen] = useState(false);
   const [expandedExercises, setExpandedExercises] = useState<Set<number>>(new Set());
-  const [localExerciseOrder, setLocalExerciseOrder] = useState<any[]>([]);
+  const [localExerciseOrder, setLocalExerciseOrder] = useState<ExtendedTrainingExercise[]>([]);
   const [isEditTrainingExerciseModalOpen, setIsEditTrainingExerciseModalOpen] = useState(false);
-  const [editingTrainingExercise, setEditingTrainingExercise] = useState<any>(null);
+  const [editingTrainingExercise, setEditingTrainingExercise] = useState<ExtendedTrainingExercise | null>(null);
+  // Session storage for workout logs (not saved to DB until training is finished)
+  const [sessionLogs, setSessionLogs] = useState<Array<Omit<WorkoutLog, 'id' | 'user_id' | 'created_at'>>>([]);
+  
+  // Weight unit per exercise (exercise_id -> unit)
+  const [exerciseWeightUnits, setExerciseWeightUnits] = useState<Record<number, 'kg' | 'lb'>>({});
 
-  // Early returns after all hooks
   const training = trainings.find(t => t.id === parseInt(id || ''));
-  if (!training) {
-    return <div className="p-4 text-white">Training not found.</div>;
-  }
+
+  // Start training when component mounts
+  useEffect(() => {
+    if (training?.id) {
+      startTraining(training.id);
+    }
+    
+    // Cleanup function to stop training when component unmounts
+    return () => {
+      stopTraining();
+    };
+  }, [training?.id, startTraining, stopTraining]);
 
   // Initialize exercisesInTraining with proper ordering
   const exercisesInTraining = useMemo(() => {
+    if (!training) return [];
+    
     const baseExercises = trainingExercises.filter(te => te.training_id === training.id)
       .map(te => ({
         ...te,
@@ -60,7 +81,23 @@ const TrackingPage = () => {
       return localExerciseOrder;
     }
     return baseExercises;
-  }, [trainingExercises, training.id, exercises, trainingPlannedSets, localExerciseOrder]);
+  }, [trainingExercises, training?.id, exercises, trainingPlannedSets, localExerciseOrder]);
+
+  // Initialize exercise weight units (only for exercises without user override)
+  useEffect(() => {
+    exercisesInTraining.forEach(te => {
+      // Only initialize if no user override exists
+      if (!exerciseWeightUnits[te.exercise_id]) {
+        const exercise = exercises.find(ex => ex.id === te.exercise_id);
+        const preferredUnit = exercise?.preferred_unit || profile?.unit || 'kg';
+        
+        setExerciseWeightUnits(prev => ({
+          ...prev,
+          [te.exercise_id]: preferredUnit
+        }));
+      }
+    });
+  }, [exercisesInTraining, exercises, profile?.unit, exerciseWeightUnits]);
 
   // Update local order when data changes
   useEffect(() => {
@@ -102,42 +139,53 @@ const TrackingPage = () => {
         return;
       }
 
-      // Log to database
+      // Get exercise ID
       const exerciseId = exercisesInTraining.find(te => te.id === trainingExerciseId)?.exercise_id;
       if (!exerciseId) return;
 
-      const newLog: Omit<WorkoutLog, 'id' | 'user_id' | 'created_at'> = {
+      // Convert weight back to kg for session storage and later database storage
+      const exerciseUnit = getExerciseWeightUnit(exerciseId);
+      const weightInKg = convertWeight(weight, exerciseUnit, 'kg');
+
+      // Store in session (not in database yet)
+      const newSessionLog: Omit<WorkoutLog, 'id' | 'user_id' | 'created_at'> = {
         exercise_id: exerciseId,
         reps,
-        weight,
+        weight: weightInKg,
       };
 
-      const { data, error } = await addLog(newLog);
-      if (error) {
-        alert(error.message);
-        return;
-      }
+      setSessionLogs(prev => [...prev, newSessionLog]);
 
-      // Update state
+      // Update state - store the original weight in current unit for display
       setCompletedSets(prev => ({
         ...prev,
         [setKey]: { reps, weight, completed: true }
       }));
-
-      if (data) {
-        setCurrentLogs(prev => ({
-          ...prev,
-          [trainingExerciseId]: [...(prev[trainingExerciseId] || []), data[0]],
-        }));
-      }
     } else {
-      // Mark as uncompleted
+      // Mark as uncompleted and remove from session logs
+      const exerciseId = exercisesInTraining.find(te => te.id === trainingExerciseId)?.exercise_id;
+      if (exerciseId && currentSet) {
+        // Remove the corresponding session log
+        const exerciseUnit = getExerciseWeightUnit(exerciseId);
+        setSessionLogs(prev => {
+          const indexToRemove = prev.findIndex(log => 
+            log.exercise_id === exerciseId && 
+            log.reps === currentSet.reps && 
+            log.weight === convertWeight(currentSet.weight, exerciseUnit, 'kg')
+          );
+          if (indexToRemove !== -1) {
+            return prev.filter((_, index) => index !== indexToRemove);
+          }
+          return prev;
+        });
+      }
+
       setCompletedSets(prev => ({
         ...prev,
         [setKey]: { ...currentSet, completed: false }
       }));
     }
-  }, [completedSets, exercisesInTraining, addLog]);
+  }, [completedSets, exercisesInTraining, addLog, exerciseWeightUnits]);
 
   const addExtraSet = useCallback((trainingExerciseId: number) => {
     setExtraSets(prev => {
@@ -180,18 +228,48 @@ const TrackingPage = () => {
       };
     });
     
-    // Remove from completed sets if it was completed
+    // Remove from completed sets and session logs if it was completed
+    const setKey = getSetKey(trainingExerciseId, setId, true);
+    const completedSet = completedSets[setKey];
+    
+    if (completedSet?.completed) {
+      // Remove from session logs
+      const exerciseId = exercisesInTraining.find(te => te.id === trainingExerciseId)?.exercise_id;
+      if (exerciseId) {
+        const exerciseUnit = getExerciseWeightUnit(exerciseId);
+        setSessionLogs(prev => {
+          const indexToRemove = prev.findIndex(log => 
+            log.exercise_id === exerciseId && 
+            log.reps === completedSet.reps && 
+            log.weight === convertWeight(completedSet.weight, exerciseUnit, 'kg')
+          );
+          if (indexToRemove !== -1) {
+            return prev.filter((_, index) => index !== indexToRemove);
+          }
+          return prev;
+        });
+      }
+    }
+    
     setCompletedSets(prev => {
-      const setKey = getSetKey(trainingExerciseId, setId, true);
       const newCompleted = { ...prev };
       delete newCompleted[setKey];
       return newCompleted;
     });
-  }, [exercisesInTraining]);
+  }, [exercisesInTraining, completedSets, exerciseWeightUnits]);
 
   const handleDeleteTrainingExercise = async (trainingExerciseId: number, exerciseName: string) => {
     if (window.confirm(`Möchtest du die Übung "${exerciseName}" wirklich aus dem Training entfernen?`)) {
+      // Get exercise ID to remove related session logs
+      const exerciseId = exercisesInTraining.find(te => te.id === trainingExerciseId)?.exercise_id;
+      
       await deleteTrainingExercise(trainingExerciseId);
+      
+      // Clean up session logs for this exercise
+      if (exerciseId) {
+        setSessionLogs(prev => prev.filter(log => log.exercise_id !== exerciseId));
+      }
+      
       // Clean up any extra sets and completed sets for this exercise
       setExtraSets(prev => {
         const newSets = { ...prev };
@@ -210,7 +288,7 @@ const TrackingPage = () => {
     }
   };
 
-  const handleEditTrainingExercise = (trainingExercise: any) => {
+  const handleEditTrainingExercise = (trainingExercise: ExtendedTrainingExercise) => {
     setEditingTrainingExercise(trainingExercise);
     setIsEditTrainingExerciseModalOpen(true);
   };
@@ -275,6 +353,7 @@ const TrackingPage = () => {
     plannedUnit: string | null,
     isExtra: boolean = false
   ) => {
+    const currentUnit = getExerciseWeightUnit(exerciseId);
     const setKey = getSetKey(trainingExerciseId, setId, isExtra);
     const isCompleted = completedSets[setKey]?.completed || false;
     const completedData = completedSets[setKey];
@@ -291,12 +370,16 @@ const TrackingPage = () => {
               <span className="font-medium">Satz {setNumber}:</span>
               {!isExtra && (plannedReps || plannedWeight) && (
                 <span className="text-gray-400 ml-1">
-                  Geplant: {plannedReps || '?'} Wdh. × {plannedWeight || '?'} {plannedUnit || 'kg'}
+                  Geplant: {plannedReps || '?'} Wdh. × {
+                    plannedWeight 
+                      ? convertWeight(plannedWeight, (plannedUnit as 'kg' | 'lb') || 'kg', currentUnit)
+                      : '?'
+                  } {currentUnit}
                 </span>
               )}
               {lastReps && lastWeight && (
                 <span className="text-blue-400 ml-1">
-                  {isExtra ? 'Letztes Mal: ' : ' | Letztes Mal: '}{lastReps} Wdh. × {lastWeight} kg
+                  {isExtra ? 'Letztes Mal: ' : ' | Letztes Mal: '}{lastReps} Wdh. × {convertWeight(lastWeight, 'kg', currentUnit)} {currentUnit}
                 </span>
               )}
               {isExtra && !lastReps && !lastWeight && (
@@ -307,7 +390,7 @@ const TrackingPage = () => {
           <div className="flex items-center space-x-2">
             {isCompleted && completedData && (
               <span className="text-green-500 text-sm">
-                ✓ {completedData.reps} Wdh. × {completedData.weight} kg
+                ✓ {completedData.reps} Wdh. × {completedData.weight} {currentUnit}
               </span>
             )}
             {isExtra && (
@@ -355,8 +438,42 @@ const TrackingPage = () => {
     );
   };
 
-  const handleFinishTraining = () => {
-    if (window.confirm('Möchtest du das Training wirklich beenden? Alle eingetragenen Sätze wurden bereits gespeichert.')) {
+  const handleFinishTraining = async () => {
+    if (window.confirm('Möchtest du das Training wirklich beenden? Alle eingetragenen Sätze werden jetzt gespeichert.')) {
+      // Save all session logs to database
+      const savePromises = sessionLogs.map(log => addLog(log));
+      
+      try {
+        const results = await Promise.allSettled(savePromises);
+        const failedSaves = results.filter(result => result.status === 'rejected');
+        
+        if (failedSaves.length > 0) {
+          alert(`Warnung: ${failedSaves.length} Sätze konnten nicht gespeichert werden. Bitte versuche es erneut.`);
+          return;
+        }
+        
+        // All saves successful
+        stopTraining();
+        navigate('/');
+      } catch (error) {
+        alert('Fehler beim Speichern der Trainingsdaten. Bitte versuche es erneut.');
+        console.error('Error saving session logs:', error);
+      }
+    }
+  };
+
+  const handleCancelTraining = () => {
+    const completedSetsCount = Object.values(completedSets).filter(set => set.completed).length;
+    const message = completedSetsCount > 0 
+      ? `⚠️ Möchtest du das Training wirklich abbrechen?\n\n${completedSetsCount} eingetragene Sätze gehen dabei VERLOREN und werden NICHT gespeichert!`
+      : '⚠️ Möchtest du das Training wirklich abbrechen?';
+      
+    if (window.confirm(message)) {
+      // Clear all session data
+      setSessionLogs([]);
+      setCompletedSets({});
+      setExtraSets({});
+      stopTraining();
       navigate('/');
     }
   };
@@ -369,6 +486,77 @@ const TrackingPage = () => {
       newExpanded.add(exerciseId);
     }
     setExpandedExercises(newExpanded);
+  };
+
+  // Check if all sets of an exercise are completed
+  const areAllSetsCompleted = (trainingExerciseId: number) => {
+    const exercise = exercisesInTraining.find(te => te.id === trainingExerciseId);
+    if (!exercise) return false;
+    
+    const totalPlannedSets = exercise.plannedSets.length;
+    const extraSetsCount = extraSets[trainingExerciseId]?.length || 0;
+    const totalSets = totalPlannedSets + extraSetsCount;
+    
+    if (totalSets === 0) return false;
+    
+    let completedCount = 0;
+    
+    // Check planned sets
+    exercise.plannedSets.forEach((ps: any) => {
+      const setKey = getSetKey(trainingExerciseId, ps.id, false);
+      if (completedSets[setKey]?.completed) {
+        completedCount++;
+      }
+    });
+    
+    // Check extra sets
+    (extraSets[trainingExerciseId] || []).forEach((extraSet: ExtraSetData) => {
+      const setKey = getSetKey(trainingExerciseId, extraSet.id, true);
+      if (completedSets[setKey]?.completed) {
+        completedCount++;
+      }
+    });
+    
+    return completedCount === totalSets;
+  };
+
+  // Convert weight between kg and lb
+  const convertWeight = (weight: number, fromUnit: 'kg' | 'lb', toUnit: 'kg' | 'lb'): number => {
+    if (fromUnit === toUnit) return weight;
+    if (fromUnit === 'kg' && toUnit === 'lb') {
+      return Math.round(weight * 2.20462 * 4) / 4; // Round to nearest 0.25
+    }
+    if (fromUnit === 'lb' && toUnit === 'kg') {
+      return Math.round(weight / 2.20462 * 4) / 4; // Round to nearest 0.25
+    }
+    return weight;
+  };
+
+  // Get weight unit for specific exercise
+  const getExerciseWeightUnit = (exerciseId: number): 'kg' | 'lb' => {
+    // First check user's manual override
+    if (exerciseWeightUnits[exerciseId]) {
+      return exerciseWeightUnits[exerciseId];
+    }
+    
+    // Then check exercise's preferred unit
+    const exercise = exercises.find(ex => ex.id === exerciseId);
+    if (exercise?.preferred_unit) {
+      return exercise.preferred_unit;
+    }
+    
+    // Finally fallback to profile default
+    return profile?.unit || 'kg';
+  };
+
+  // Toggle weight unit for specific exercise
+  const toggleExerciseWeightUnit = (exerciseId: number) => {
+    const currentUnit = getExerciseWeightUnit(exerciseId);
+    const newUnit = currentUnit === 'kg' ? 'lb' : 'kg';
+    setExerciseWeightUnits(prev => ({
+      ...prev,
+      [exerciseId]: newUnit
+    }));
   };
 
   const handleDragEnd = async (result: DropResult) => {
@@ -407,6 +595,11 @@ const TrackingPage = () => {
       setLocalExerciseOrder(originalOrder);
     }
   };
+
+  // Early return after all hooks are defined
+  if (!training) {
+    return <div className="p-4 text-white">Training not found.</div>;
+  }
 
   return (
     <div className="p-4 space-y-6">
@@ -447,20 +640,31 @@ const TrackingPage = () => {
                             </div>
                             <button 
                               onClick={() => toggleExerciseExpansion(te.id)}
-                              className="flex items-center space-x-2 flex-1 text-left hover:bg-gray-800 rounded p-1 -m-1 transition-colors"
+                              className="flex items-center space-x-2 flex-1 text-left hover:bg-gray-800 rounded p-1 -m-1 transition-colors min-w-0"
                             >
                               {expandedExercises.has(te.id) ? (
-                                <ChevronDown size={18} className="text-gray-500 dark:text-gray-400" />
+                                <ChevronDown size={18} className="text-gray-500 dark:text-gray-400 flex-shrink-0" />
                               ) : (
-                                <ChevronRight size={18} className="text-gray-500 dark:text-gray-400" />
+                                <ChevronRight size={18} className="text-gray-500 dark:text-gray-400 flex-shrink-0" />
                               )}
-                              <h2 className={`font-medium text-base ${text}`}>{te.exercise_name}</h2>
-                              <span className="text-gray-600 dark:text-gray-400 text-xs ml-auto">
-                                {te.planned_sets + (extraSets[te.id]?.length || 0)} Sätze
-                              </span>
+                              <h2 className={`font-medium text-base ${text} flex-1 truncate`}>{te.exercise_name}</h2>
                             </button>
+                            <span className={`text-xs flex-shrink-0 ${
+                              areAllSetsCompleted(te.id) 
+                                ? 'text-green-500 font-medium' 
+                                : 'text-gray-600 dark:text-gray-400'
+                            }`}>
+                              {te.planned_sets + (extraSets[te.id]?.length || 0)} Sätze
+                            </span>
                           </div>
                           <div className="flex space-x-2">
+                            <button
+                              onClick={() => toggleExerciseWeightUnit(te.exercise_id)}
+                              className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-mono"
+                              title="Gewichtseinheit umschalten"
+                            >
+                              {getExerciseWeightUnit(te.exercise_id)}
+                            </button>
                             <button
                               onClick={() => handleEditTrainingExercise(te)}
                               className="text-blue-400 hover:text-blue-300 p-1"
@@ -514,8 +718,14 @@ const TrackingPage = () => {
         </DragDropContext>
       )}
 
-      <div className="pt-4">
+      <div className="pt-4 flex flex-col space-y-3">
         <Button onClick={handleFinishTraining}>Training beenden</Button>
+        <button
+          onClick={handleCancelTraining}
+          className="w-full px-4 py-3 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-colors font-medium"
+        >
+          Abbrechen
+        </button>
       </div>
 
       {/* Modal für Übung hinzufügen */}

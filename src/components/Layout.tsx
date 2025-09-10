@@ -1,6 +1,7 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { ListTodo, Dumbbell, BarChart2, Settings, ScrollText } from 'lucide-react';
 import Header from './Header';
+import { useTracking } from '../contexts/TrackingContext';
 
 const navItems = [
   { path: '/', label: 'Trainings', icon: ListTodo },
@@ -11,6 +12,20 @@ const navItems = [
 ];
 
 const Layout = () => {
+  const { isTraining } = useTracking();
+  const location = useLocation();
+  const isOnTrackingPage = location.pathname.startsWith('/track/');
+
+  const handleNavClick = (e: React.MouseEvent, path: string) => {
+    if (isTraining && !isOnTrackingPage) {
+      e.preventDefault();
+      if (window.confirm('⚠️ Du bist gerade im Training-Modus.\n\nMöchtest du wirklich das Training verlassen? Verwende stattdessen die Buttons "Training beenden" oder "Abbrechen" auf der Tracking-Seite.')) {
+        // User confirmed, allow navigation
+        window.location.href = path;
+      }
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-black text-gray-900 dark:text-white min-h-screen font-sans">
       <Header />
@@ -35,6 +50,7 @@ const Layout = () => {
             key={path}
             to={path}
             end
+            onClick={(e) => handleNavClick(e, path)}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center w-full pt-2 pb-1 text-xs ` +
               (isActive ? 'text-red-500' : 'text-gray-600 dark:text-gray-400')

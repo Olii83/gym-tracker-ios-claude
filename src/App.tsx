@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { TrackingProvider } from './contexts/TrackingContext';
 import Layout from './components/Layout';
 import Trainings from './pages/Trainings';
 import Uebungen from './pages/Uebungen';
@@ -25,17 +26,19 @@ function App() {
           </Routes>
         ) : (
           <DataProvider>
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Trainings />} />
-                <Route path="trainings/:id" element={<TrainingDetail />} />
-                <Route path="track/:id" element={<TrackingPage />} />
-                <Route path="uebungen" element={<Uebungen />} />
-                <Route path="protokolle" element={<Logs />} />
-                <Route path="statistiken" element={<Statistiken />} />
-                <Route path="einstellungen" element={<Einstellungen />} />
-              </Route>
-            </Routes>
+            <TrackingProvider>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Trainings />} />
+                  <Route path="trainings/:id" element={<TrainingDetail />} />
+                  <Route path="track/:id" element={<TrackingPage />} />
+                  <Route path="uebungen" element={<Uebungen />} />
+                  <Route path="protokolle" element={<Logs />} />
+                  <Route path="statistiken" element={<Statistiken />} />
+                  <Route path="einstellungen" element={<Einstellungen />} />
+                </Route>
+              </Routes>
+            </TrackingProvider>
           </DataProvider>
         )}
         <PWAUpdatePrompt />
