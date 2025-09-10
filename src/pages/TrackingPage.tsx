@@ -448,25 +448,23 @@ const TrackingPage = () => {
             className={`w-16 bg-gray-800 border border-gray-700 rounded px-1 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
             id={`reps-${inputId}`}
           />
-          <div className="flex flex-1 space-x-1">
-            <input
-              type="number"
-              inputMode="decimal"
-              step="0.25"
-              placeholder="Gewicht"
-              disabled={isCompleted}
-              className={`flex-1 bg-gray-800 border border-gray-700 rounded px-1 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
-              id={`weight-${inputId}`}
-            />
-            <button
-              onClick={() => toggleExerciseWeightUnit(exerciseId)}
-              disabled={isCompleted}
-              className={`px-1 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-mono w-8 ${isCompleted ? 'opacity-50' : ''}`}
-              title="Gewichtseinheit umschalten"
-            >
-              {currentUnit}
-            </button>
-          </div>
+          <input
+            type="number"
+            inputMode="decimal"
+            step="0.25"
+            placeholder="Gewicht"
+            disabled={isCompleted}
+            className={`w-20 bg-gray-800 border border-gray-700 rounded px-1 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-red-600 ${isCompleted ? 'opacity-50' : ''}`}
+            id={`weight-${inputId}`}
+          />
+          <button
+            onClick={() => toggleExerciseWeightUnit(exerciseId)}
+            disabled={isCompleted}
+            className={`px-1 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors font-mono w-8 ${isCompleted ? 'opacity-50' : ''}`}
+            title="Gewichtseinheit umschalten"
+          >
+            {currentUnit}
+          </button>
           <button
             onClick={() => toggleSetCompletion(trainingExerciseId, setId, setNumber, isExtra)}
             className={`flex items-center justify-center w-7 h-7 rounded border-2 transition-all flex-shrink-0 ${
@@ -481,10 +479,10 @@ const TrackingPage = () => {
           {!isCompleted && (
             <button
               onClick={() => isExtra ? removeExtraSet(trainingExerciseId, setId as string) : deleteSet(trainingExerciseId, setId, setNumber)}
-              className="flex items-center justify-center w-7 h-7 rounded text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all flex-shrink-0"
+              className="flex items-center justify-center w-6 h-6 rounded text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all flex-shrink-0"
               title="Satz löschen"
             >
-              <Trash2 size={12} />
+              <Trash2 size={10} />
             </button>
           )}
         </div>
